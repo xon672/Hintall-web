@@ -155,6 +155,18 @@ main{
   font-size: 45px;
   transition:2s linear;
 }
+/*h1 tags */
+.notAvailable{
+  width: 100vw;
+  height :fit-content ;
+  display: none;
+  position :absolute ;
+  top: 30%;
+  font-size :70px;
+  z-index :500;
+  text-align :center ;
+   
+}
 /*js added selectors*/
 .newNavWidth{
   width: 60vw;
@@ -208,6 +220,14 @@ font-family: var(--textStyle);
 margin-left: 20px;
 margin-top: 5px;
 animation: fadeOut 0.5s;
+}
+.removeBdDesign{
+  display: none;
+}
+.addtext{
+  visibility: visible;
+  display: block;
+  
 }
 /* animation */
 @keyframes fadeIn {

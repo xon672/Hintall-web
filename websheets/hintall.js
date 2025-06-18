@@ -9,6 +9,7 @@ var pageLink = document.querySelectorAll
 var moodButton = document.querySelector(".moodButton")
 var mainPage = document.getElementById('main')
 var links = document.querySelectorAll('.pageLinkHolder i')
+var body = document.querySelector ('.html')
 //Boolean variables 
 var onDarkMood = false
 var navIsOpen = false 
@@ -25,6 +26,7 @@ mainPage.onscroll = function() {
 //for each
 links.forEach(smoothScroll)
 pageLink.forEach(smoothScroll)
+notAvailableOnDt()
 
 //functions
 
@@ -122,3 +124,18 @@ function eachAnchor(e){
     
   
 };
+function notAvailableOnDt(){
+  var bodyWidth = body.getBoundingClientRect().width
+  var notAvailDis = document.querySelector('.notAvailable')
+  var displayBd = document.querySelector ('.displayBd')
+  
+  if (bodyWidth > 900){
+    notAvailDis.classList.add('addtext')
+    displayBd.classList.add('removeBdDesign')
+    
+  } else {
+     notAvailDis.classList.remove('addtext')
+    displayBd.classList.remove('removeBdDesign')
+    
+  }
+}
