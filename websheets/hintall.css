@@ -100,14 +100,12 @@ main{
 }
 .pageLinkContainer{
   width :fit-content ;
-  border :solid 2px ;
 }
 .pageLinkContainer .pageLinkHolder{
   width :fit-content ;
   display: flex;
   margin-top: 55px;
-  margin-left:15px;
-  border :solid 2px ;
+  margin-left:20px ;
   
 }
 .logoNameHolder{
@@ -152,7 +150,6 @@ main{
   width:fit-content ;
   font-size: 35px;
   color: var(--color2);
-  border: ;
 } 
 .moodButton > i{
   font-size: 45px;

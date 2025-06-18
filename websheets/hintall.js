@@ -120,5 +120,5 @@ function eachAnchor(e){
     }
     );
     
-  console.log(target);
+  
 };
