@@ -1,58 +1,75 @@
-:root{ 
-  --color1 : blue;
+:root {
+  --color1: blue;
   --color2: white;
-  --color3:black;
+  --color3: black;
   --trans: 0.7s linear;
-  --textStyle:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  --textStyle: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
-*,::after,::before{
+
+*,
+::after,
+::before {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
-  
+
 
 }
-html{
+
+html {
   scroll-behavior: smooth;
-  
+
 }
 
 body {
   width: 100vw;
   height: 100vh;
-    margin: auto;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    overflow: auto;
-    background: linear-gradient(250deg, var(--color2) 3%, var(--color2)38%, var(--color1) 68%, var(--color1) 98%);
-    animation: gradient 15s ease infinite;
-    background-size: 400% 400%;
-    background-attachment: fixed;
-} 
-main{
-  border: solid 2px ;
-  width :80vw;
-  height:100vh;
-  position: absolute ;
-  right: 0 ;
-  top:0;
-  z-index: 998;
-  overflow: scroll ;
-  scroll-behavior :smooth ;
+  margin: auto;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: auto;
+  background: linear-gradient(250deg, var(--color2) 3%, var(--color1)38%, var(--color1) 68%, var(--color1) 98%);
+  animation: gradient 15s ease infinite;
+  background-size: 400% 400%;
+  background-attachment: fixed;
 }
+
+main {
+  border: solid 2px;
+  width: 80vw;
+  height: 100vh;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 998;
+  overflow: scroll;
+  scroll-behavior: smooth;
+}
+
 /*imgs tags*/
 [alt |="HintAll Logo"] {
   width: fit-content;
   height: 70px;
-  
+
 }
+
 /*paragraph tags*/
 .hintAllName {
   display: block;
   opacity: 0;
-  
+
 
 }
+.signUpfromLogin{
+  width: 90vw;
+  margin-left: 5vw;
+  margin-right: vw;
+  text-align: center ;
+  color: var(--color1);
+  margin-top: 30px ;
+  font-size: 20px ;
+}
+
 /*Buttons tag*/
 .openNavContainer {
   width: fit-content;
@@ -61,9 +78,37 @@ main{
   background: transparent;
   font-size: 40px;
   color: var(--color2);
-  margin-top :50px;
-  margin-left :15px ;
+  margin-top: 50px;
+  margin-left: 15px;
 }
+
+.closeLoginPage {
+  width: fit-content;
+  height: fit-content;
+  border: none;
+  background: transparent;
+  font-size: 40px;
+  color: var(--color1);
+  position: absolute ;
+  top: 2%;
+  right :5%;
+}
+.loginBtn{
+  width :80vw ;
+  height: 40px;
+  background:var(--color1 );
+  margin-left: 10vw;
+  margin-right: 10vw;
+  margin-top: 50px;
+  border-color: none;
+  border-style: none;
+  font-size :20px;
+  border-radius:5px;
+  color: var(--color2);
+  text-transform: uppercase ;
+  font-weight: bold;
+}
+
 /*div tags*/
 .animateB {
   background: rgb(255 255 255 / 25%);
@@ -90,48 +135,94 @@ main{
   animation: wave 20s -1s reverse infinite;
   opacity: 0.9;
 }
+
 .navContainer {
-  position:absolute ;
+  position: absolute;
   width: 20vw;
   height: 100vh;
   background: var(--color1);
   transition: var(--trans);
-  z-index: 999 ;
+  z-index: 999;
 }
-.pageLinkContainer{
-  width :fit-content ;
+
+.pageLinkContainer {
+  width: fit-content;
 }
-.pageLinkContainer .pageLinkHolder{
-  width :fit-content ;
+
+.pageLinkContainer .pageLinkHolder {
+  width: fit-content;
   display: flex;
   margin-top: 55px;
-  margin-left:20px ;
-  
+  margin-left: 20px;
+
 }
-.logoNameHolder{
-  width:fit-content;
-  
+
+.logoNameHolder {
+  width: fit-content;
+
 }
-.contentHolder{
-  width:100vw;
-  height:100vh;
-  border :solid 2px ;
+
+.contentHolder {
+  width: 100vw;
+  height: 100vh;
+  border: solid 2px;
 }
-.moodButton{
-  width :fit-content ;
-  height :fit-content ;
-  position :absolute ;
-  right :5%;
+
+.moodButton {
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  right: 5%;
   top: 2%;
-  z-index:999 ;
-  transition: 2s linear ;
+  z-index: 999;
+  transition: 2s linear;
 }
-.contentHolder{
-  width :80vw;
-  height: 100vh ;
+
+.contentHolder {
+  width: 80vw;
+  height: 100vh;
 }
+
+.notAvailable {
+  width: 100vw;
+  height: fit-content;
+  display: none;
+  position: absolute;
+  top: 30%;
+  font-size: 70px;
+  z-index: 500;
+  text-align: center;
+
+}
+
+#loginPage {
+  width: 100vw;
+  height: 70vh;
+  position: absolute;
+  bottom: 0%;
+  z-index: 999;
+  border: solid 2px;
+  border-radius: 15px 15px 0px 0px;
+  background: var(--color2);
+  animation: fadeIn 2s;
+}
+#SignPage{
+  width: 100vw;
+  height: 70vh;
+  position: absolute;
+  bottom: 0%;
+  z-index: 999;
+  border: solid 2px;
+  border-radius: 15px 15px 0px 0px;
+  background: var(--color2);
+  display: none ;
+  animation:fadeIn 2s ;
+  overflow: scroll ;
+  padding-bottom :40px;
+}
+
 /*span tags*/
-.underling{
+.underling {
   display: block;
   width: 50px;
   height: 3px;
@@ -140,104 +231,152 @@ main{
   margin-right: 15px;
   transition: var(--trans);
 }
+.loginSignBtn{
+  font-weight: bold ;
+  text-transform: uppercase ;
+}
+.signLoginBtn{
+  font-weight: bold ;
+  text-transform: uppercase ;
+}
 /*anchor tags*/
-.navLinks{
+.navLinks {
   display: block;
   opacity: 0;
 }
+
 /* icon tags */
-.pageLinkHolder > i{
-  width:fit-content ;
+.pageLinkHolder>i {
+  width: fit-content;
   font-size: 35px;
   color: var(--color2);
-} 
-.moodButton > i{
+}
+
+.moodButton>i {
   font-size: 45px;
-  transition:2s linear;
+  transition: 2s linear;
 }
+
 /*h1 tags */
-.notAvailable{
-  width: 100vw;
-  height :fit-content ;
-  display: none;
-  position :absolute ;
-  top: 30%;
-  font-size :70px;
-  z-index :500;
-  text-align :center ;
-   
+#loginPage>h1 {
+  color: var(--color1);
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  
 }
+#SignPage > h1{
+  color: var(--color1);
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  
+}
+/*input tags */
+.loginInput{
+  width :80vw;
+  height :45px;
+  margin-left: 10vw;
+  margin-right: 10vw;
+  margin-top :20px;
+  padding-left: 20px ;
+  font-size :15px ;
+  color: var (--color1);
+}
+
 /*js added selectors*/
-.newNavWidth{
+.newNavWidth {
   width: 60vw;
 }
 
-.hintAllNameDesign{
+.hintAllNameDesign {
   font-size: 30px;
   font-weight: bold;
   font-family: var(--textStyle);
   color: var(--color2);
   animation: fadeIn 4.5s;
   margin-top: 20px;
-margin-left: 5px;
+  margin-left: 5px;
 
 }
-.logoNameHolder{
+
+.logoNameHolder {
   display: flex;
 
 }
-.fadeOutText{
+
+.fadeOutText {
   margin-top: 20px;
-margin-left: 5px;
+  margin-left: 5px;
   font-size: 30px;
   font-weight: bold;
   font-family: var(--textStyle);
   color: var(--color2);
-  animation: fadeOut 0.5s; 
+  animation: fadeOut 0.5s;
 }
-.newUnderlingDesing{
+
+.newUnderlingDesing {
   display: block;
-width: 200px;
-height: 3px;
-background: white;
-margin-left: 10px;
-margin-right: 10px;
+  width: 200px;
+  height: 3px;
+  background: white;
+  margin-left: 10px;
+  margin-right: 10px;
 }
-.fadeInAnchorLinks{
-  font-size:25px;
-color: var(--color2);
-text-decoration: none;
-font-family: var(--textStyle);
-margin-left: 20px;
-margin-top: 5px;
-animation: fadeIn 4.5s;
+
+.fadeInAnchorLinks {
+  font-size: 25px;
+  color: var(--color2);
+  text-decoration: none;
+  font-family: var(--textStyle);
+  margin-left: 20px;
+  margin-top: 5px;
+  animation: fadeIn 4.5s;
 }
-.fadeOutAnchorLinks{
-  font-size:25px;
-color: var(--color2);
-text-decoration: none;
-font-family: var(--textStyle);
-margin-left: 20px;
-margin-top: 5px;
-animation: fadeOut 0.5s;
+
+.fadeOutAnchorLinks {
+  font-size: 25px;
+  color: var(--color2);
+  text-decoration: none;
+  font-family: var(--textStyle);
+  margin-left: 20px;
+  margin-top: 5px;
+  animation: fadeOut 0.5s;
 }
-.removeBdDesign{
+
+.removeBdDesign {
   display: none;
 }
-.addtext{
+
+.addtext {
   visibility: visible;
   display: block;
-  
+
 }
+
 /* animation */
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
-@keyframes fadeOut{
-  0% { opacity:1 ; }
-  100% { opacity: 0; }
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
+
 @keyframes wave {
   2% {
     transform: translateX(1);
@@ -259,14 +398,17 @@ animation: fadeOut 0.5s;
     transform: translateX(1);
   }
 }
+
 @keyframes gradient {
-    0% {
-        background-position: 0% 0%;
-    }
-    50% {
-        background-position: 100% 100%;
-    }
-    100% {
-        background-position: 0% 0%;
-    }
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
 }
