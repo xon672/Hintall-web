@@ -1,6 +1,7 @@
 :root{ 
   --color1 : blue;
   --color2: white;
+  --color3:black;
   --trans: 0.7s linear;
   --textStyle:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
@@ -18,7 +19,7 @@ html{
 }
 
 body {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
     margin: auto;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -27,6 +28,17 @@ body {
     animation: gradient 15s ease infinite;
     background-size: 400% 400%;
     background-attachment: fixed;
+} 
+main{
+  border: solid 2px ;
+  width :80vw;
+  height:100vh;
+  position: absolute ;
+  right: 0 ;
+  top:0;
+  z-index: 998;
+  overflow: scroll ;
+  scroll-behavior :smooth ;
 }
 /*imgs tags*/
 [alt |="HintAll Logo"] {
@@ -49,9 +61,8 @@ body {
   background: transparent;
   font-size: 40px;
   color: var(--color2);
-  position: absolute;
-  bottom: 3%;
-  left: 5%;
+  margin-top :50px;
+  margin-left :15px ;
 }
 /*div tags*/
 .animateB {
@@ -80,26 +91,46 @@ body {
   opacity: 0.9;
 }
 .navContainer {
-  width: 70px;
+  position:absolute ;
+  width: 20vw;
   height: 100vh;
   background: var(--color1);
-  transition: var(--trans)
+  transition: var(--trans);
+  z-index: 999 ;
 }
 .pageLinkContainer{
   width :fit-content ;
-}
-.pageLinkHolder > i{
-  font-size: 35px;
-  color: var(--color2);
+  border :solid 2px ;
 }
 .pageLinkContainer .pageLinkHolder{
+  width :fit-content ;
   display: flex;
-  margin-top: 40px;
+  margin-top: 55px;
   margin-left:15px;
+  border :solid 2px ;
+  
 }
 .logoNameHolder{
   width:fit-content;
   
+}
+.contentHolder{
+  width:100vw;
+  height:100vh;
+  border :solid 2px ;
+}
+.moodButton{
+  width :fit-content ;
+  height :fit-content ;
+  position :absolute ;
+  right :5%;
+  top: 2%;
+  z-index:999 ;
+  transition: 2s linear ;
+}
+.contentHolder{
+  width :80vw;
+  height: 100vh ;
 }
 /*span tags*/
 .underling{
@@ -108,7 +139,7 @@ body {
   height: 3px;
   background: white;
   margin-left: 10px;
-  margin-right: 10px;
+  margin-right: 15px;
   transition: var(--trans);
 }
 /*anchor tags*/
@@ -116,12 +147,20 @@ body {
   display: block;
   opacity: 0;
 }
-.pageLinkContainer .pageLinkHolder:last-of-type i{
-  margin-top: 15px;
+/* icon tags */
+.pageLinkHolder > i{
+  width:fit-content ;
+  font-size: 35px;
+  color: var(--color2);
+  border: ;
+} 
+.moodButton > i{
+  font-size: 45px;
+  transition:2s linear;
 }
 /*js added selectors*/
 .newNavWidth{
-  width: 220px;
+  width: 60vw;
 }
 
 .hintAllNameDesign{

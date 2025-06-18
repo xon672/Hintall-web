@@ -11,46 +11,64 @@
   <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
 </head>
 
-<body>
+<body id="body">
+  <div class="moodButton"><i class="fa-solid fa-cloud-moon" ></i></div>
   <div class="animateB"></div>
   <div class="animateB"></div>
   <div class="animateB"></div>
-  <button type="submit" class="openNavContainer"><i class="fa-solid fa-bars"></i></button>
-  <div class="navContainer">
+  
+  <div id="navMood"class="navContainer">
     <div class="logoNameHolder">
       <img src="./images/hinticon.png" alt="HintAll Logo">
       <p class="hintAllName">HintAll</p>
     </div>
     <span class="underling"></span>
     <div class="pageLinkContainer">
-      <div class="pageLinkHolder">
-        <i class="fa-solid fa-house"></i>
-        <a href="#Main" class="navLinks">Main</a>
+      <div class="pageLinkHolder" >
+        <i class="fa-solid fa-user" href="#Profile"></i>
+        <a href="#Profile" class="navLinks">Profile</a>
       </div>
       <div class="pageLinkHolder">
-        <i class="fa-brands fa-usps"></i>
-        <a href="#service" class="navLinks">Service</a>
+        <i class="fa-solid fa-fire-flame-curved" href="#Service"></i>
+        <a href="#Service" class="navLinks">Service</a>
+      </div>
+      <div class="pageLinkHolder" >
+        <i class="fa-solid fa-newspaper" href="#What'sNew" ></i>
+        <a href="#What'sNew" class="navLinks">What'sNew </a>
       </div>
       <div class="pageLinkHolder">
-        <i class="fa-solid fa-house"></i>
-        <a href="#Main" class="navLinks">Main</a>
+        <i class="fa-solid fa-land-mine-on" href="#Mining"></i>
+        <a href="#Mining" class="navLinks">Mining</a>
       </div>
       <div class="pageLinkHolder">
-        <i class="fa-solid fa-house"></i>
-        <a href="#Main" class="navLinks">Main</a>
-      </div>
-      <div class="pageLinkHolder">
-        <i class="fa-brands fa-google-play"></i>
-        <a href="#HintallApplication" class="navLinks">Hintall Application</a>
+        <i class="fa-brands fa-google-play" href="#Application"></i>
+        <a href="#Application" class="navLinks">Application</a>
       </div>
     </div>
-
+    <button type="submit" class="openNavContainer"><i class="fa-solid fa-bars"></i></button>
   </div>
 
 
-  <main>
-    <div class="contentHolder">
+  <main id="main">
+    <div class="contentHolder" id="Profile">
+      <h1>Profile</h1>
 
+    </div>
+    <div class="contentHolder" id="Service">
+      <h1>Service </h1>
+      
+    </div>
+    <div class="contentHolder" id="What'sNew">
+      <h1>Whats New</h1>
+      
+    </div>
+    <div class="contentHolder" id="Mining">
+      <h1>Mining</h1>
+      
+    </div>
+    <div class="contentHolder " id="Application">
+      <h1>Application </h1>
+      
     </div>
 
   </main>
