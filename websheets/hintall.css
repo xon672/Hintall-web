@@ -13,7 +13,7 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
-
+  
 
 }
 
@@ -201,7 +201,6 @@ main {
   position: absolute;
   bottom: 0%;
   z-index: 999;
-  border: solid 2px;
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
   animation: fadeIn 2s;
@@ -212,12 +211,12 @@ main {
   position: absolute;
   bottom: 0%;
   z-index: 999;
-  border: solid 2px;
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
   display: none ;
   animation:fadeIn 2s ;
-  overflow: scroll ;
+  overflow-y: scroll ;
+  overflow-x: wrap;
   padding-bottom :40px;
 }
 
@@ -231,6 +230,7 @@ main {
   margin-right: 15px;
   transition: var(--trans);
 }
+
 .loginSignBtn{
   font-weight: bold ;
   text-transform: uppercase ;
@@ -256,6 +256,9 @@ main {
   font-size: 45px;
   transition: 2s linear;
 }
+#SignPage > p > i{
+  font-size :15px;
+}
 
 /*h1 tags */
 #loginPage>h1 {
@@ -271,7 +274,7 @@ main {
   text-align: center;
   text-transform: uppercase;
   margin-top: 30px;
-  margin-bottom: 50px;
+  
   
 }
 /*input tags */
@@ -285,7 +288,17 @@ main {
   font-size :15px ;
   color: var (--color1);
 }
-
+/* paragraph tags */
+#SignPage > p{
+  width :90vw ;
+  font-size: 23px ;
+  text-align :center ;
+  color: var(--color1);
+  margin-top :20px;
+  margin-bottom: 30px;
+  margin-left: 5vw;
+  margin-right: 5vw;
+}
 /*js added selectors*/
 .newNavWidth {
   width: 60vw;

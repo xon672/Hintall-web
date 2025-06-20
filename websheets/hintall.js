@@ -14,6 +14,7 @@ var loginSignBtn = document.querySelector('.loginSignBtn')
 var signLoginBtn = document.querySelector('.signLoginBtn')
 var signPage = document.getElementById ('SignPage')
   var logPage = document.getElementById ('loginPage')
+
 //Boolean variables 
 var onDarkMood = false
 var navIsOpen = false 
@@ -29,7 +30,6 @@ mainPage.onscroll = function() {
 }
 loginSignBtn.addEventListener("click", openSigninPage) 
 signLoginBtn.addEventListener("click", openSigninPage)
-
 
 //for each
 links.forEach(smoothScroll)
