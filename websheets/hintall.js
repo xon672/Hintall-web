@@ -1,35 +1,62 @@
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCnCiDCRqoHtMrEPdwyOYppcxPf1QUdt1E",
+  authDomain: "hintall.firebaseapp.com",
+  databaseURL: "https://hintall-default-rtdb.firebaseio.com",
+  projectId: "hintall",
+  storageBucket: "hintall.appspot.com",
+  messagingSenderId: "869161438156",
+  appId: "1:869161438156:web:65195d9e5c1b6b2c3bab69",
+  measurementId: "G-PJFX79LC8P"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+//Importing authentication 
+//import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const analytics = getAnalytics(app);
 //variables 
-var navContainer = document.querySelector (".navContainer")
+var navContainer = document.querySelector(".navContainer")
 var openNavContainer = document.querySelector(".openNavContainer");
 var hintAllName = document.querySelector(".hintAllName")
 var logoNameHolder = document.querySelector(".logoNameHolder")
 var navUnderling = document.querySelector('.underling')
-var pageLink = document.querySelectorAll
-(".pageLinkHolder a")
+var pageLink = document.querySelectorAll(".pageLinkHolder a")
 var moodButton = document.querySelector(".moodButton")
 var mainPage = document.getElementById('main')
 var links = document.querySelectorAll('.pageLinkHolder i')
-var body = document.querySelector ('.html')
+var body = document.querySelector('.html')
 var loginSignBtn = document.querySelector('.loginSignBtn')
 var signLoginBtn = document.querySelector('.signLoginBtn')
-var signPage = document.getElementById ('SignPage')
-  var logPage = document.getElementById ('loginPage')
+var signPage = document.getElementById('SignPage')
+var logPage = document.getElementById('loginPage')
+var signupBtn = document.getElementById('signupBtn')
 
 //Boolean variables 
 var onDarkMood = false
-var navIsOpen = false 
+var navIsOpen = false
 var onloginPage = true
 
 //eventListeners
-openNavContainer.addEventListener("click",openNavigation);
+openNavContainer.addEventListener("click", openNavigation);
 moodButton.addEventListener("click", changeMood)
 mainPage.onscroll = function() {
   if (navIsOpen) {
     removeWidthAndDesing()
   }
 }
-loginSignBtn.addEventListener("click", openSigninPage) 
+loginSignBtn.addEventListener("click", openSigninPage)
 signLoginBtn.addEventListener("click", openSigninPage)
+signupBtn.addEventListener("click", signUserToFirebase)
 
 //for each
 links.forEach(smoothScroll)
@@ -42,46 +69,48 @@ function openNavigation() {
   var navContainerWidth = navContainer.getBoundingClientRect().width;
   //console.log(navContainerWidth)
   if (navContainerWidth == 72) {
-    
+
     addWidthAndDesing()
   } else {
     removeWidthAndDesing()
   }
 }
+
 function addWidthAndDesing() {
   navContainer.classList.add('newNavWidth')
-openNavContainer.innerHTML = `<i class="fa-solid fa-xmark"></i>`
-hintAllName.classList.remove('fadeOutText')
-hintAllName.classList.add('hintAllNameDesign')
-hintAllName.classList.remove('hintAllName')
-navUnderling.classList.add
-('newUnderlingDesing')
-pageLink.forEach(addDesingToNavLinks)
-navIsOpen = true 
+  openNavContainer.innerHTML = `<i class="fa-solid fa-xmark"></i>`
+  hintAllName.classList.remove('fadeOutText')
+  hintAllName.classList.add('hintAllNameDesign')
+  hintAllName.classList.remove('hintAllName')
+  navUnderling.classList.add('newUnderlingDesing')
+  pageLink.forEach(addDesingToNavLinks)
+  navIsOpen = true
 }
 
 function removeWidthAndDesing() {
-navContainer.classList.remove('newNavWidth')
-openNavContainer.innerHTML = `<i class="fa-solid fa-bars"></i>`
-hintAllName.classList.add('fadeOutText')
-hintAllName.classList.remove('hintAllNameDesign')
-hintAllName.classList.add('hintAllName')
-navUnderling.classList.remove('newUnderlingDesing')
-pageLink.forEach(removeNavDesings)
-navIsOpen = false
+  navContainer.classList.remove('newNavWidth')
+  openNavContainer.innerHTML = `<i class="fa-solid fa-bars"></i>`
+  hintAllName.classList.add('fadeOutText')
+  hintAllName.classList.remove('hintAllNameDesign')
+  hintAllName.classList.add('hintAllName')
+  navUnderling.classList.remove('newUnderlingDesing')
+  pageLink.forEach(removeNavDesings)
+  navIsOpen = false
 
-} 
+}
 
 function addDesingToNavLinks(links) {
   links.classList.add('fadeInAnchorLinks')
   links.classList.remove('navLinks')
   links.classList.remove('fadeOutAnchorLinks')
 }
+
 function removeNavDesings(links) {
   links.classList.add('fadeOutAnchorLinks')
-links.classList.add('navLinks')
-links.classList.remove('fadeinAnchorLinks')
+  links.classList.add('navLinks')
+  links.classList.remove('fadeinAnchorLinks')
 }
+
 function changeMood() {
   if (navIsOpen) {
     removeWidthAndDesing()
@@ -89,75 +118,156 @@ function changeMood() {
   if (!onDarkMood) {
     moodButton.innerHTML = `<i class="fa-solid fa-cloud-sun" style= "color :var(--color2 );"></i>`
     document.getElementById('navMood').style.background = 'var(--color3)'
-    onDarkMood = true 
+    onDarkMood = true
     changebodyBg(onDarkMood)
-    
-  } 
-  else{
-    moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>` 
+
+  }
+  else {
+    moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
     document.getElementById('navMood').style.background = 'var(--color1)'
-    onDarkMood = false 
-    changebodyBg(onDarkMood )
-    
+    onDarkMood = false
+    changebodyBg(onDarkMood)
+
   }
 }
+
 function changebodyBg(param) {
   var body = document.getElementById('body')
   if (param) {
     body.style.background = 'linear-gradient(250deg, var(--color2) 3%, var(--color3)38%, var(--color3) 68%, var(--color3) 98%)'
-    body.style.animation ='gradient 15s ease infinite'
+    body.style.animation = 'gradient 15s ease infinite'
     body.style.backgroundSize = '400% 400%'
     body.style.backgroundAttachment = 'fixed'
-  } else{
+  } else {
     body.style.background = 'linear-gradient(250deg, var(--color2) 3%, var(--color1)38%, var(--color1) 68%, var(--color1) 98%)'
-    body.style.animation ='gradient 15s ease infinite'
+    body.style.animation = 'gradient 15s ease infinite'
     body.style.backgroundSize = '400% 400%'
     body.style.backgroundAttachment = 'fixed'
   }
 }
-function smoothScroll(link){
-  link.addEventListener('click',eachAnchor)
+
+function smoothScroll(link) {
+  link.addEventListener('click', eachAnchor)
 };
-function eachAnchor(e){
+
+function eachAnchor(e) {
   e.preventDefault()
   var target = e.currentTarget.getAttribute('href').slice(1);
   var element = document.getElementById(target);
   var position = element.offsetTop;
-  
+
   mainPage.scrollTo(
-    {
-      right:0,top:position
-    }
-    );
-    
-  
+  {
+    right: 0,
+    top: position
+  });
+
+
 };
-function notAvailableOnDt(){
+
+function notAvailableOnDt() {
   var bodyWidth = body.getBoundingClientRect().width
   var notAvailDis = document.querySelector('.notAvailable')
-  var displayBd = document.querySelector ('.displayBd')
+  var displayBd = document.querySelector('.displayBd')
   var displaylogPages = document.querySelector('.loginAndSignupPage ')
-  if (bodyWidth > 900){
+  if (bodyWidth > 900) {
     notAvailDis.classList.add('addtext')
     displayBd.classList.add('removeBdDesign')
     displaylogPages.classList.add('removeBdDesign')
-    
+
   } else {
-     notAvailDis.classList.remove('addtext')
+    notAvailDis.classList.remove('addtext')
     displayBd.classList.remove('removeBdDesign')
     displaylogPages.classList.remove('removeBdDesign')
-    
+
   }
 }
+
 function openSigninPage() {
-  if(onloginPage){
+  if (onloginPage) {
     signPage.style.display = 'block'
-  logPage.style.display = 'none'
-  onloginPage = false
-  }else{
+    logPage.style.display = 'none'
+    onloginPage = false
+  } else {
     signPage.style.display = 'none'
-  logPage.style.display = 'block'
-  onloginPage = true
+    logPage.style.display = 'block'
+    onloginPage = true
   }
-  
+
 }
+function signUserToFirebase() {
+  var fullName = document.getElementById('fullName')
+  var userName = document.getElementById ('Username')
+  var email = document.getElementById('email')
+  var password = document.getElementById ('password')
+  //console.log(fullName.value , userName. value, email.value, password.value )
+  if (fullName.value ==='', userName .value === '', email.value ==='', password.value === '') {
+    alert('All input should be filled to proceed')
+  } else {
+    
+    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) =>{
+      const user=userCredential.user;
+        const userData={
+            email: email.value,
+            fullName: fullName.value,
+            userName: username.val, 
+            password: password.value
+        };
+        alert('Account Created!')
+        const docRef=doc(db, "users", user.uid);
+        setDoc(app, docRef,userData)
+        .then(()=>{
+            signPage.style.display = 'none'
+        })
+        .catch((error)=>{
+            console.error("error writing document", error);
+
+        });
+    }).catch((error)=>{
+        const errorCode=error.code;
+        if(errorCode=='auth/email-already-in-use'){
+            showMessage('Email Address Already Exists !!!', 'signUpMessage');
+        }
+        else{
+            showMessage('unable to create User', 'signUpMessage');
+        }
+    }).catch((error)=>{
+        const errorCode=error.code;
+        if(errorCode=='auth/email-already-in-use'){
+            alert('Email Already In Use');
+        }
+        else{
+            alert('unable to create User') ;
+        }
+    })
+    
+    console.log('ready to sign up')
+  }
+}
+/* const signIn=document.getElementById('submitSignIn');
+ signIn.addEventListener('click', (event)=>{
+    event.preventDefault();
+    const email=document.getElementById('email').value;
+    const password=document.getElementById('password').value;
+    const auth=getAuth();
+
+    signInWithEmailAndPassword(auth, email,password)
+    .then((userCredential)=>{
+        showMessage('login is successful', 'signInMessage');
+        const user=userCredential.user;
+        localStorage.setItem('loggedInUserId', user.uid);
+        window.location.href='homepage.html';
+    })
+    .catch((error)=>{
+        const errorCode=error.code;
+        if(errorCode==='auth/invalid-credential'){
+            showMessage('Incorrect Email or Password', 'signInMessage');
+        }
+        else{
+            showMessage('Account does not Exist', 'signInMessage');
+        }
+    })
+ })
+  
+  
+}*/

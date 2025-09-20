@@ -204,6 +204,7 @@ main {
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
   animation: fadeIn 2s;
+  display: none;
 }
 #SignPage{
   width: 100vw;
@@ -213,7 +214,7 @@ main {
   z-index: 999;
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
-  display: none ;
+  display: block;
   animation:fadeIn 2s ;
   overflow-y: scroll ;
   overflow-x: wrap;
