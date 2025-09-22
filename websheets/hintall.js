@@ -39,6 +39,7 @@ var signLoginBtn = document.querySelector('.signLoginBtn')
 var signPage = document.getElementById('SignPage')
 var logPage = document.getElementById('loginPage')
 var signupBtn = document.getElementById('signupBtn')
+var loginBtn = document.getElementById('loginBtn')
 
 //Boolean variables 
 var onDarkMood = false
@@ -56,6 +57,7 @@ mainPage.onscroll = function() {
 loginSignBtn.addEventListener("click", openSigninPage)
 signLoginBtn.addEventListener("click", openSigninPage)
 signupBtn.addEventListener("click", signUserToFirebase)
+loginBtn.addEventListener("click", loginUserToFirebase)
 
 //for each
 links.forEach(smoothScroll)
@@ -203,8 +205,9 @@ function signUserToFirebase() {
   if (fullName.value === '', userName.value === '', email.value === '', password.value === '') {
     alert('All input should be filled to proceed')
   } else {
-    createUserWithEmailAndPassword(auth, email.value, password.value).then(()=>{
-      set(ref(db, "Web Users/" + password.value), {
+    alert("Uploading your details please wait a moment")
+    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential)=>{
+      set(ref(db, "Web Users/" + userCredential.user.uid), {
         fullname: fullName.value,
         username: userName.value,
         emailAcc: email.value,
@@ -220,20 +223,22 @@ function signUserToFirebase() {
   }
   
 }
-/* const signIn=document.getElementById('submitSignIn');
- signIn.addEventListener('click', (event)=>{
-    event.preventDefault();
-    const email=document.getElementById('email').value;
-    const password=document.getElementById('password').value;
-    const auth=getAuth();
-
-    signInWithEmailAndPassword(auth, email,password)
-    .then((userCredential)=>{
-        showMessage('login is successful', 'signInMessage');
-        const user=userCredential.user;
-        localStorage.setItem('loggedInUserId', user.uid);
-        window.location.href='homepage.html';
+function loginUserToFirebase(){
+  var email = document.getElementById('loginEmail')
+  var password = document.getElementById('loginPassword')
+  if (email.value ==='', password.value =='') {
+    alert('All input should be filled to proceed')
+  } else {
+    alert('Please wait a moment')
+    const auth = getAuth()
+    signInWithEmailAndPassword(auth, email.value, password.value).then(()=>{
+      alert('SignedIn')
+      signPage.style.display = 'none'
+      logPage.style.display = 'none'
     })
+  }
+}
+/* 
     .catch((error)=>{
         const errorCode=error.code;
         if(errorCode==='auth/invalid-credential'){
