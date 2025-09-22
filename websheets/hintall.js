@@ -1,9 +1,8 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"
-
+import {getDatabase, ref, child, get, set, update, remove} from  "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
 const firebaseConfig = {
   apiKey: "AIzaSyCnCiDCRqoHtMrEPdwyOYppcxPf1QUdt1E",
   authDomain: "hintall.firebaseapp.com",
@@ -20,8 +19,8 @@ const app = initializeApp(firebaseConfig);
 
 //Importing authentication 
 //import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-const auth=getAuth(app);
-const db=getFirestore(app);
+const auth = getAuth(app);
+const db = getDatabase();
 
 const analytics = getAnalytics(app);
 //variables 
@@ -195,54 +194,31 @@ function openSigninPage() {
   }
 
 }
+
 function signUserToFirebase() {
   var fullName = document.getElementById('fullName')
-  var userName = document.getElementById ('Username')
+  var userName = document.getElementById('Username')
   var email = document.getElementById('email')
-  var password = document.getElementById ('password')
-  //console.log(fullName.value , userName. value, email.value, password.value )
-  if (fullName.value ==='', userName .value === '', email.value ==='', password.value === '') {
+  var password = document.getElementById('password')
+  if (fullName.value === '', userName.value === '', email.value === '', password.value === '') {
     alert('All input should be filled to proceed')
   } else {
-    
-    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) =>{
-      const user=userCredential.user;
-        const userData={
-            email: email.value,
-            fullName: fullName.value,
-            userName: username.val, 
-            password: password.value
-        };
-        alert('Account Created!')
-        const docRef=doc(db, "users", user.uid);
-        setDoc(app, docRef,userData)
-        .then(()=>{
-            signPage.style.display = 'none'
-        })
-        .catch((error)=>{
-            console.error("error writing document", error);
-
-        });
-    }).catch((error)=>{
-        const errorCode=error.code;
-        if(errorCode=='auth/email-already-in-use'){
-            showMessage('Email Address Already Exists !!!', 'signUpMessage');
-        }
-        else{
-            showMessage('unable to create User', 'signUpMessage');
-        }
-    }).catch((error)=>{
-        const errorCode=error.code;
-        if(errorCode=='auth/email-already-in-use'){
-            alert('Email Already In Use');
-        }
-        else{
-            alert('unable to create User') ;
-        }
+    createUserWithEmailAndPassword(auth, email.value, password.value).then(()=>{
+      set(ref(db, "Web Users/" + password.value), {
+        fullname: fullName.value,
+        username: userName.value,
+        emailAcc: email.value,
+        passWord: password.value
+}).then(() => {
+  signPage.style.display = 'none'
+  alert('Sign up successfull')
+}).catch(() => {
+  alert('not successfull')
+})
     })
     
-    console.log('ready to sign up')
   }
+  
 }
 /* const signIn=document.getElementById('submitSignIn');
  signIn.addEventListener('click', (event)=>{
