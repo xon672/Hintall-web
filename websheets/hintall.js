@@ -40,6 +40,7 @@ var signPage = document.getElementById('SignPage')
 var logPage = document.getElementById('loginPage')
 var signupBtn = document.getElementById('signupBtn')
 var loginBtn = document.getElementById('loginBtn')
+var profilMineBtn = document.getElementById('mineGint')
 
 //Boolean variables 
 var onDarkMood = false
@@ -58,6 +59,7 @@ loginSignBtn.addEventListener("click", openSigninPage)
 signLoginBtn.addEventListener("click", openSigninPage)
 signupBtn.addEventListener("click", signUserToFirebase)
 loginBtn.addEventListener("click", loginUserToFirebase)
+profilMineBtn.addEventListener("click", openMiningPage)
 
 //for each
 links.forEach(smoothScroll)
@@ -232,11 +234,21 @@ function loginUserToFirebase(){
     alert('Please wait a moment')
     const auth = getAuth()
     signInWithEmailAndPassword(auth, email.value, password.value).then(()=>{
-      alert('SignedIn')
+      alert('Sign in successfull')
       signPage.style.display = 'none'
       logPage.style.display = 'none'
     })
   }
+}
+function openMiningPage() {
+  var element = document.getElementById('Mining');
+  var position = element.offsetTop;
+
+  mainPage.scrollTo(
+  {
+    right: 0,
+    top: position
+  });
 }
 /* 
     .catch((error)=>{

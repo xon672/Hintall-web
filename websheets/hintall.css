@@ -35,14 +35,15 @@ body {
 }
 
 main {
-  border: solid 2px;
+
   width: 80vw;
   height: 100vh;
   position: absolute;
   right: 0;
   top: 0;
+  
   z-index: 998;
-  overflow: scroll;
+  overflow :scroll ;
   scroll-behavior: smooth;
 }
 
@@ -51,6 +52,11 @@ main {
   width: fit-content;
   height: 70px;
 
+}
+.GintIcon{
+  width :25px;
+  height :25px;
+  
 }
 
 /*paragraph tags*/
@@ -108,6 +114,18 @@ main {
   text-transform: uppercase ;
   font-weight: bold;
 }
+.transBtn{
+  height :45px;
+background:transparent ;
+margin-top: 20px;
+border-color: var(--color2);
+border-style: solid 2px ;
+font-size :15px;
+border-radius:5px;
+color: var(--color2);
+
+}
+
 
 /*div tags*/
 .animateB {
@@ -163,9 +181,13 @@ main {
 }
 
 .contentHolder {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
-  border: solid 2px;
+  border-left: solid 2px var(--color2);
+  border-bottom: solid 1.5px var(--color2);
+  border-radius :15px;
+  overflow: scroll;
+  scroll-behavior :smooth ;
 }
 
 .moodButton {
@@ -176,11 +198,6 @@ main {
   top: 2%;
   z-index: 999;
   transition: 2s linear;
-}
-
-.contentHolder {
-  width: 80vw;
-  height: 100vh;
 }
 
 .notAvailable {
@@ -219,9 +236,52 @@ main {
   overflow-y: scroll ;
   overflow-x: wrap;
   padding-bottom :40px;
-  display: block ;
+  display: none;
 }
-
+.accountValueation{
+  width : 100%;
+  height :fit-content ;
+  margin: 10px;
+}
+.accountButtons{
+  display: grid;
+  grid-template-rows :5fr 5fr;
+  grid-template-columns :4fr 4fr ;
+  column-gap: 5px;
+  margin-top :30px;
+}
+.availableGint{
+  display: flex;
+  color:var(--color2);
+  margin-top:10px;
+}
+.ProfileDil{
+  display: flex ;
+  flex-direction: column ;
+  gap: 10px;
+  margin-top :30px;
+  color:var(--color2);
+}
+.miningCountDownHol{
+  border :solid 2px ;
+  width :100%;
+  height :100% ;
+  display :flex;
+  flex-direction :column ;
+  margin-top :30px;
+  padding: 10px;
+  align-items :center ;
+}
+.miningBox{
+  border :solid 2px var(--color2) ;
+  width :200px;
+  height :200px;
+  border-radius :40px;
+  text-align :center ;
+}
+#Profile{
+  display :flex;
+}
 /*span tags*/
 .underling {
   display: block;
@@ -240,6 +300,24 @@ main {
 .signLoginBtn{
   font-weight: bold ;
   text-transform: uppercase ;
+}
+.accountBalance{
+  display: block ;
+  font-size: 25px ;
+  font-weight: bold;
+  margin-top: 15px;
+  color: var(--color2) ;
+  text-align: center ;
+}
+.nairaNote{
+  font-size: 15px;
+}
+.countTime{
+  color: var(--color2);
+  font-size:30px ;
+  font-weight: bold;
+  display :block ;
+  margin-top:80px;
 }
 /*anchor tags*/
 .navLinks {
@@ -279,6 +357,21 @@ main {
   
   
 }
+.accountValueation>h1{
+  color: var(--color2);
+  
+  font-size: 25px ;
+}
+.contentHolder>h1{
+  width :100%;
+  color: var(--color2);
+  text-align :center ;
+  margin-top :10px ;
+}
+.miningCountDownHol>h2{
+  color: var(--color2);
+  align-self: flex-start ;
+}
 /*input tags */
 .loginInput{
   width :80vw;
@@ -300,6 +393,11 @@ main {
   margin-bottom: 30px;
   margin-left: 5vw;
   margin-right: 5vw;
+}
+.miningCountDownHol> p{
+  margin-top :20px ;
+  color:var(--color2);
+  align-self:flex-start ;
 }
 /*js added selectors*/
 .newNavWidth {
