@@ -13,7 +13,7 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
-  
+
 
 }
 
@@ -41,9 +41,9 @@ main {
   position: absolute;
   right: 0;
   top: 0;
-  
+
   z-index: 998;
-  overflow :scroll ;
+  overflow: scroll;
   scroll-behavior: smooth;
 }
 
@@ -53,10 +53,11 @@ main {
   height: 70px;
 
 }
-.GintIcon{
-  width :25px;
-  height :25px;
-  
+
+.GintIcon {
+  width: 25px;
+  height: 25px;
+
 }
 
 /*paragraph tags*/
@@ -66,14 +67,15 @@ main {
 
 
 }
-.signUpfromLogin{
+
+.signUpfromLogin {
   width: 90vw;
   margin-left: 5vw;
   margin-right: vw;
-  text-align: center ;
+  text-align: center;
   color: var(--color1);
-  margin-top: 30px ;
-  font-size: 20px ;
+  margin-top: 30px;
+  font-size: 20px;
 }
 
 /*Buttons tag*/
@@ -95,35 +97,50 @@ main {
   background: transparent;
   font-size: 40px;
   color: var(--color1);
-  position: absolute ;
+  position: absolute;
   top: 2%;
-  right :5%;
+  right: 5%;
 }
-.loginBtn{
-  width :80vw ;
+
+.loginBtn {
+  width: 80vw;
   height: 40px;
-  background:var(--color1 );
+  background: var(--color1);
   margin-left: 10vw;
   margin-right: 10vw;
   margin-top: 50px;
   border-color: none;
   border-style: none;
-  font-size :20px;
-  border-radius:5px;
+  font-size: 20px;
+  border-radius: 5px;
   color: var(--color2);
-  text-transform: uppercase ;
+  text-transform: uppercase;
   font-weight: bold;
 }
-.transBtn{
-  height :45px;
-background:transparent ;
-margin-top: 20px;
-border-color: var(--color2);
-border-style: solid 2px ;
-font-size :15px;
-border-radius:5px;
-color: var(--color2);
 
+.transBtn {
+  height: 45px;
+  background: transparent;
+  margin-top: 20px;
+  border-color: var(--color2);
+  border-style: solid 2px;
+  font-size: 15px;
+  border-radius: 5px;
+  color: var(--color2);
+
+}
+
+.taskBtn {
+  display: block;
+  width: 100%;
+  height: 45px;
+  background: transparent;
+  margin-top: 20px;
+  border-color: var(--color2);
+  border-style: solid 2px;
+  font-size: 15px;
+  border-radius: 5px;
+  color: var(--color2);
 }
 
 
@@ -185,9 +202,10 @@ color: var(--color2);
   height: 100vh;
   border-left: solid 2px var(--color2);
   border-bottom: solid 1.5px var(--color2);
-  border-radius :15px;
+  border-radius: 15px;
   overflow: scroll;
-  scroll-behavior :smooth ;
+  scroll-behavior: smooth;
+  padding: 10px;
 }
 
 .moodButton {
@@ -223,7 +241,8 @@ color: var(--color2);
   animation: fadeIn 2s;
   display: none;
 }
-#SignPage{
+
+#SignPage {
   width: 100vw;
   height: 70vh;
   position: absolute;
@@ -232,56 +251,97 @@ color: var(--color2);
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
   display: block;
-  animation:fadeIn 2s ;
-  overflow-y: scroll ;
+  animation: fadeIn 2s;
+  overflow-y: scroll;
   overflow-x: wrap;
-  padding-bottom :40px;
+  padding-bottom: 40px;
   display: none;
 }
-.accountValueation{
-  width : 100%;
-  height :fit-content ;
-  margin: 10px;
+
+.accountValueation {
+  width: 100%;
+  height: fit-content;
+
 }
-.accountButtons{
+
+.accountButtons {
   display: grid;
-  grid-template-rows :5fr 5fr;
-  grid-template-columns :4fr 4fr ;
+  grid-template-rows: 5fr 5fr;
+  grid-template-columns: 4fr 4fr;
   column-gap: 5px;
-  margin-top :30px;
+  margin-top: 30px;
 }
-.availableGint{
+
+.availableGint {
   display: flex;
-  color:var(--color2);
-  margin-top:10px;
+  color: var(--color2);
+  margin-top: 10px;
 }
-.ProfileDil{
-  display: flex ;
-  flex-direction: column ;
+
+.ProfileDil {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-top :30px;
-  color:var(--color2);
+  margin-top: 30px;
+  color: var(--color2);
 }
-.miningCountDownHol{
-  border :solid 2px ;
+
+.miningCountDownHol {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+
+  align-items: center;
+}
+
+.miningBox {
+  border: solid 2px var(--color2);
+  width: 200px;
+  height: 200px;
+  border-radius: 40px;
+  text-align: center;
+}
+
+#Profile {
+  display: flex;
+}
+
+.taskList {
+  width: 100%;
+  height: 60%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--color2);
+  margin-top: 10px;
+
+}
+
+.offeredService{
   width :100%;
-  height :100% ;
-  display :flex;
-  flex-direction :column ;
-  margin-top :30px;
-  padding: 10px;
-  align-items :center ;
+  height :70%;
+  
+  display: grid;
+  grid-template-rows: 5fr 5fr;
+  grid-template-columns: 4fr 4fr;
+  gap: 5px;
+  margin-top: 30px;
 }
-.miningBox{
-  border :solid 2px var(--color2) ;
-  width :200px;
-  height :200px;
-  border-radius :40px;
-  text-align :center ;
+.serviceBox{
+  border-radius :15px;
+  border-right: solid 2px var(--color2);
+  border-bottom: solid 1.5px var(--color2);
+  text-align: center ;
+  padding-top: 90px;
+  color :var(--color2 );
+  font-size: 20px ;
+  word-break: break-all;
+  font-weight :bold ;
 }
-#Profile{
-  display :flex;
-}
+
 /*span tags*/
 .underling {
   display: block;
@@ -293,32 +353,37 @@ color: var(--color2);
   transition: var(--trans);
 }
 
-.loginSignBtn{
-  font-weight: bold ;
-  text-transform: uppercase ;
+.loginSignBtn {
+  font-weight: bold;
+  text-transform: uppercase;
 }
-.signLoginBtn{
-  font-weight: bold ;
-  text-transform: uppercase ;
+
+.signLoginBtn {
+  font-weight: bold;
+  text-transform: uppercase;
 }
-.accountBalance{
-  display: block ;
-  font-size: 25px ;
+
+.accountBalance {
+  display: block;
+  font-size: 25px;
   font-weight: bold;
   margin-top: 15px;
-  color: var(--color2) ;
-  text-align: center ;
+  color: var(--color2);
+  text-align: center;
 }
-.nairaNote{
+
+.nairaNote {
   font-size: 15px;
 }
-.countTime{
+
+.countTime {
   color: var(--color2);
-  font-size:30px ;
+  font-size: 30px;
   font-weight: bold;
-  display :block ;
-  margin-top:80px;
+  display: block;
+  margin-top: 80px;
 }
+
 /*anchor tags*/
 .navLinks {
   display: block;
@@ -336,8 +401,9 @@ color: var(--color2);
   font-size: 45px;
   transition: 2s linear;
 }
-#SignPage > p > i{
-  font-size :15px;
+
+#SignPage>p>i {
+  font-size: 15px;
 }
 
 /*h1 tags */
@@ -347,58 +413,67 @@ color: var(--color2);
   text-transform: uppercase;
   margin-top: 30px;
   margin-bottom: 50px;
-  
+
 }
-#SignPage > h1{
+
+#SignPage>h1 {
   color: var(--color1);
   text-align: center;
   text-transform: uppercase;
   margin-top: 30px;
-  
-  
+
+
 }
-.accountValueation>h1{
+
+.accountValueation>h1 {
   color: var(--color2);
-  
-  font-size: 25px ;
+
+  font-size: 25px;
 }
-.contentHolder>h1{
-  width :100%;
+
+.contentHolder>h1 {
+  width: 100%;
   color: var(--color2);
-  text-align :center ;
-  margin-top :10px ;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
-.miningCountDownHol>h2{
+
+.miningCountDownHol>h2 {
   color: var(--color2);
-  align-self: flex-start ;
+  align-self: flex-start;
 }
+
 /*input tags */
-.loginInput{
-  width :80vw;
-  height :45px;
+.loginInput {
+  width: 80vw;
+  height: 45px;
   margin-left: 10vw;
   margin-right: 10vw;
-  margin-top :20px;
-  padding-left: 20px ;
-  font-size :15px ;
+  margin-top: 20px;
+  padding-left: 20px;
+  font-size: 15px;
   color: var (--color1);
 }
+
 /* paragraph tags */
-#SignPage > p{
-  width :90vw ;
-  font-size: 23px ;
-  text-align :center ;
+#SignPage>p {
+  width: 90vw;
+  font-size: 23px;
+  text-align: center;
   color: var(--color1);
-  margin-top :20px;
+  margin-top: 20px;
   margin-bottom: 30px;
   margin-left: 5vw;
   margin-right: 5vw;
 }
-.miningCountDownHol> p{
-  margin-top :20px ;
-  color:var(--color2);
-  align-self:flex-start ;
+
+.miningCountDownHol>p {
+  margin-top: 20px;
+  color: var(--color2);
+  align-self: flex-start;
 }
+
 /*js added selectors*/
 .newNavWidth {
   width: 60vw;
