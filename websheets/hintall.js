@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebas
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"
-import {getDatabase, ref, child, get, set, update, remove} from  "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
+import { getDatabase, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
 const firebaseConfig = {
   apiKey: "AIzaSyCnCiDCRqoHtMrEPdwyOYppcxPf1QUdt1E",
   authDomain: "hintall.firebaseapp.com",
@@ -40,7 +40,14 @@ var signPage = document.getElementById('SignPage')
 var logPage = document.getElementById('loginPage')
 var signupBtn = document.getElementById('signupBtn')
 var loginBtn = document.getElementById('loginBtn')
-var profilMineBtn = document.getElementById('mineGint')
+var profileMineBtn = document.getElementById('mineGint')
+var nextAppImgBtn = document.getElementById('nextImg')
+var prevAppImgBtn = document.getElementById('prevImg')
+var appImg = document.getElementById('appImg')
+const lightMoodImg= ['/images/LightImg1.jpg', '/images/Lightimg2.jpg', '/images/Lightimg3.jpg'];
+const darkMoodImg= ['/images/DarkImg1.jpg', '/images/Darkimg2.jpg', '/images/Darkimg3.jpg']; 
+let currentIndex = 0;
+
 
 //Boolean variables 
 var onDarkMood = false
@@ -59,7 +66,9 @@ loginSignBtn.addEventListener("click", openSigninPage)
 signLoginBtn.addEventListener("click", openSigninPage)
 signupBtn.addEventListener("click", signUserToFirebase)
 loginBtn.addEventListener("click", loginUserToFirebase)
-profilMineBtn.addEventListener("click", openMiningPage)
+profileMineBtn.addEventListener("click", openMiningPage)
+nextAppImgBtn.addEventListener("click", displayNextImages)
+prevAppImgBtn.addEventListener("click", displayPrevImages)
 
 //for each
 links.forEach(smoothScroll)
@@ -123,13 +132,14 @@ function changeMood() {
     document.getElementById('navMood').style.background = 'var(--color3)'
     onDarkMood = true
     changebodyBg(onDarkMood)
-
+    appImg.src ='/images/DarkImg1.jpg'
   }
   else {
     moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
     document.getElementById('navMood').style.background = 'var(--color1)'
     onDarkMood = false
     changebodyBg(onDarkMood)
+    appImg.src ='/images/LightImg1.jpg' 
 
   }
 }
@@ -208,38 +218,40 @@ function signUserToFirebase() {
     alert('All input should be filled to proceed')
   } else {
     alert("Uploading your details please wait a moment")
-    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential)=>{
+    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) => {
       set(ref(db, "Web Users/" + userCredential.user.uid), {
         fullname: fullName.value,
         username: userName.value,
         emailAcc: email.value,
         passWord: password.value
-}).then(() => {
-  signPage.style.display = 'none'
-  alert('Sign up successfull')
-}).catch(() => {
-  alert('not successfull')
-})
+      }).then(() => {
+        signPage.style.display = 'none'
+        alert('Sign up successfull')
+      }).catch(() => {
+        alert('not successfull')
+      })
     })
-    
+
   }
-  
+
 }
-function loginUserToFirebase(){
+
+function loginUserToFirebase() {
   var email = document.getElementById('loginEmail')
   var password = document.getElementById('loginPassword')
-  if (email.value ==='', password.value =='') {
+  if (email.value === '', password.value == '') {
     alert('All input should be filled to proceed')
   } else {
     alert('Please wait a moment')
     const auth = getAuth()
-    signInWithEmailAndPassword(auth, email.value, password.value).then(()=>{
+    signInWithEmailAndPassword(auth, email.value, password.value).then(() => {
       alert('Sign in successfull')
       signPage.style.display = 'none'
       logPage.style.display = 'none'
     })
   }
 }
+
 function openMiningPage() {
   var element = document.getElementById('Mining');
   var position = element.offsetTop;
@@ -249,6 +261,24 @@ function openMiningPage() {
     right: 0,
     top: position
   });
+}
+function displayNextImages() {
+  if (onDarkMood) {
+  currentIndex = (currentIndex + 1) % darkMoodImg.length;
+  appImg.src = darkMoodImg[currentIndex];
+} else {
+  currentIndex = (currentIndex + 1) % lightMoodImg.length;
+  appImg.src = lightMoodImg[currentIndex];
+}
+}
+function displayPrevImages() {
+   if (onDarkMood) {
+      currentIndex = (currentIndex - 1 + darkMoodImg.length) % darkMoodImg.length;
+      appImg.src = darkMoodImg[currentIndex];
+    } else {
+      currentIndex = (currentIndex - 1+ lightMoodImg.length) % lightMoodImg.length;
+      appImg.src = lightMoodImg[currentIndex];
+    }
 }
 /* 
     .catch((error)=>{

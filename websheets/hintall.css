@@ -59,6 +59,11 @@ main {
   height: 25px;
 
 }
+.hintImgHolder > img{
+  width :100%;
+  height :500px;
+  transition : var(--trans);
+}
 
 /*paragraph tags*/
 .hintAllName {
@@ -142,7 +147,27 @@ main {
   border-radius: 5px;
   color: var(--color2);
 }
-
+.hintImgHolder>button{
+  width:45px;
+  height: 45px;
+  background: transparent;
+  
+  border-color: var(--color2);
+  border-style: solid 2px;
+  font-size: 30px;
+  border-radius: 5px;
+  color: var(--color2);
+}
+.prevBtn{
+  position: absolute;
+  top:50%;
+  left :5%;
+}
+.nextBtn{
+  position :absolute ;
+  top :50%;
+  right:5%;
+}
 
 /*div tags*/
 .animateB {
@@ -199,13 +224,14 @@ main {
 
 .contentHolder {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   border-left: solid 2px var(--color2);
   border-bottom: solid 1.5px var(--color2);
   border-radius: 15px;
   overflow: scroll;
   scroll-behavior: smooth;
   padding: 10px;
+  position :relative ;
 }
 
 .moodButton {
@@ -320,27 +346,34 @@ main {
 
 }
 
-.offeredService{
-  width :100%;
-  height :70%;
-  
+.offeredService {
+  width: 100%;
+  height: 70%;
+
   display: grid;
   grid-template-rows: 5fr 5fr;
   grid-template-columns: 4fr 4fr;
   gap: 5px;
   margin-top: 30px;
 }
-.serviceBox{
-  border-radius :15px;
+
+.serviceBox {
+  border-radius: 15px;
   border-right: solid 2px var(--color2);
   border-bottom: solid 1.5px var(--color2);
-  text-align: center ;
+  text-align: center;
   padding-top: 90px;
-  color :var(--color2 );
-  font-size: 20px ;
+  color: var(--color2);
+  font-size: 20px;
   word-break: break-all;
-  font-weight :bold ;
+  font-weight: bold;
 }
+.hintImgHolder{
+  width: 100%;
+  height:fit-content ;
+  
+}
+
 
 /*span tags*/
 .underling {
