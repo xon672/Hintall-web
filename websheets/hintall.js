@@ -44,8 +44,8 @@ var profileMineBtn = document.getElementById('mineGint')
 var nextAppImgBtn = document.getElementById('nextImg')
 var prevAppImgBtn = document.getElementById('prevImg')
 var appImg = document.getElementById('appImg')
-const lightMoodImg= ['/images/LightImg1.jpg', '/images/Lightimg2.jpg', '/images/Lightimg3.jpg'];
-const darkMoodImg= ['/images/DarkImg1.jpg', '/images/Darkimg2.jpg', '/images/Darkimg3.jpg']; 
+const lightMoodImg= ['./images/LightImg1.jpg', './images/Lightimg2.jpg', './images/Lightimg3.jpg'];
+const darkMoodImg= ['./images/DarkImg1.jpg', './images/Darkimg2.jpg', './images/Darkimg3.jpg']; 
 let currentIndex = 0;
 
 
@@ -132,14 +132,14 @@ function changeMood() {
     document.getElementById('navMood').style.background = 'var(--color3)'
     onDarkMood = true
     changebodyBg(onDarkMood)
-    appImg.src ='/images/DarkImg1.jpg'
+    appImg.src ='./images/DarkImg1.jpg'
   }
   else {
     moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
     document.getElementById('navMood').style.background = 'var(--color1)'
     onDarkMood = false
     changebodyBg(onDarkMood)
-    appImg.src ='/images/LightImg1.jpg' 
+    appImg.src ='./images/LightImg1.jpg' 
 
   }
 }
@@ -223,7 +223,10 @@ function signUserToFirebase() {
         fullname: fullName.value,
         username: userName.value,
         emailAcc: email.value,
-        passWord: password.value
+        passWord: password.value, 
+        accountBalance: '0',
+        userLevel: 'Novice',
+        availableGint: '0'
       }).then(() => {
         signPage.style.display = 'none'
         alert('Sign up successfull')
