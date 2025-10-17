@@ -23,6 +23,8 @@ const auth = getAuth(app);
 const db = getDatabase();
 
 const analytics = getAnalytics(app);
+
+
 //variables 
 var navContainer = document.querySelector(".navContainer")
 var openNavContainer = document.querySelector(".openNavContainer");
@@ -47,7 +49,20 @@ var appImg = document.getElementById('appImg')
 const lightMoodImg= ['./images/LightImg1.jpg', './images/Lightimg2.jpg', './images/Lightimg3.jpg'];
 const darkMoodImg= ['./images/DarkImg1.jpg', './images/Darkimg2.jpg', './images/Darkimg3.jpg']; 
 let currentIndex = 0;
+var displayBd = document.getElementById ('displayBd')
 
+
+//on window load check if user is signed in
+window.onload = function() {
+  const user = auth.currentUser;
+  if (user) {
+    displayBd.style.display= 'block'
+    logPage.style.display = 'none'
+  } else {
+    displayBd.style.display= 'none'
+    logPage.style.display = 'block'
+  }
+}
 
 //Boolean variables 
 var onDarkMood = false
@@ -73,7 +88,6 @@ prevAppImgBtn.addEventListener("click", displayPrevImages)
 //for each
 links.forEach(smoothScroll)
 pageLink.forEach(smoothScroll)
-notAvailableOnDt()
 
 //functions
 

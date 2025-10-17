@@ -59,10 +59,11 @@ main {
   height: 25px;
 
 }
-.hintImgHolder > img{
-  width :100%;
-  height :500px;
-  transition : var(--trans);
+
+.hintImgHolder>img {
+  width: 100%;
+  height: 500px;
+  transition: var(--trans);
 }
 
 /*paragraph tags*/
@@ -147,41 +148,54 @@ main {
   border-radius: 5px;
   color: var(--color2);
 }
-.hintImgHolder>button{
-  width:45px;
+
+.hintImgHolder>button {
+  width: 45px;
   height: 45px;
   background: transparent;
-  
+
   border-color: var(--color2);
   border-style: solid 2px;
   font-size: 30px;
   border-radius: 5px;
   color: var(--color2);
 }
-.prevBtn{
+
+.prevBtn {
   position: absolute;
-  top:50%;
-  left :5%;
+  top: 50%;
+  left: 5%;
 }
-.nextBtn{
-  position :absolute ;
-  top :50%;
-  right:5%;
+
+.nextBtn {
+  position: absolute;
+  top: 50%;
+  right: 5%;
 }
-#downloadApkBtn{
-  width :100%;
-  height :45px;
+
+.downloadApkBtn {
+  display: block; 
+  width: 100%;
+  height: 45px;
   
   background: transparent;
   margin-top: 30px;
-  margin-bottom : 40px ;
+  margin-bottom: 40px;
   border-color: var(--color2);
-  border-style: solid 2px;
+  border: solid 2px;
   font-size: 15px;
   border-radius: 5px;
   color: var(--color2);
+  text-align: center ;
+  align-content: center ;
+  text-decoration: none;
+  
 }
+
 /*div tags*/
+#displayBd{
+  display: none ;
+}
 .animateB {
   background: rgb(255 255 255 / 25%);
   border-radius: 1000% 1000% 0 0;
@@ -243,7 +257,7 @@ main {
   overflow: scroll;
   scroll-behavior: smooth;
   padding: 10px;
-  position :relative ;
+  position: relative;
 }
 
 .moodButton {
@@ -348,7 +362,7 @@ main {
 
 .taskList {
   width: 100%;
-  height: 60%;
+  height: 80%;
 
   display: flex;
   flex-direction: column;
@@ -377,13 +391,14 @@ main {
   padding-top: 90px;
   color: var(--color2);
   font-size: 20px;
-  word-break: break-all;
+  overflow-wrap: break-word ;
   font-weight: bold;
 }
-.hintImgHolder{
+
+.hintImgHolder {
   width: 100%;
-  height:fit-content ;
-  
+  height: fit-content;
+
 }
 
 
@@ -518,9 +533,10 @@ main {
   color: var(--color2);
   align-self: flex-start;
 }
-.plainText{
-  margin-top :20px ;
-  
+
+.plainText {
+  margin-top: 20px;
+
   color: var(--color2);
 }
 
