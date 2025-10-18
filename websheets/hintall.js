@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { getAuth,onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"
-import { getDatabase, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
+import { getDatabase, onValue, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
 const firebaseConfig = {
   apiKey: "AIzaSyCnCiDCRqoHtMrEPdwyOYppcxPf1QUdt1E",
   authDomain: "hintall.firebaseapp.com",
@@ -21,6 +21,7 @@ const app = initializeApp(firebaseConfig);
 //import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 const auth = getAuth(app);
 const db = getDatabase();
+const dbRef = ref(db)
 
 const analytics = getAnalytics(app);
 
@@ -54,14 +55,27 @@ var displayBd = document.getElementById ('displayBd')
 
 //on window load check if user is signed in
 window.onload = function() {
-  const user = auth.currentUser;
-  if (user) {
-    displayBd.style.display= 'block'
-    logPage.style.display = 'none'
-  } else {
-    displayBd.style.display= 'none'
-    logPage.style.display = 'block'
-  }
+  var userTheme = localStorage.getItem('userTheme')
+  onAuthStateChanged(auth, (user) =>{
+    if (user) {
+      getAllUserCredential(user)
+      displayBd.style.display = 'block'
+logPage.style.display = 'none'
+if (userTheme == 'DarkMood') {
+  setDarkMoodOnLoad()
+} else if (userTheme == 'LightMood') {
+  setLightMood()
+} else {
+  changebodyBg(false)
+}
+
+    }else{
+      displayBd.style.display = 'none'
+      logPage.style.display = 'block'
+    }
+  })
+
+  
 }
 
 //Boolean variables 
@@ -142,18 +156,12 @@ function changeMood() {
     removeWidthAndDesing()
   }
   if (!onDarkMood) {
-    moodButton.innerHTML = `<i class="fa-solid fa-cloud-sun" style= "color :var(--color2 );"></i>`
-    document.getElementById('navMood').style.background = 'var(--color3)'
-    onDarkMood = true
-    changebodyBg(onDarkMood)
-    appImg.src ='./images/DarkImg1.jpg'
+    setDarkMoodOnLoad()
+    localStorage.setItem('userTheme', 'DarkMood')
   }
   else {
-    moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
-    document.getElementById('navMood').style.background = 'var(--color1)'
-    onDarkMood = false
-    changebodyBg(onDarkMood)
-    appImg.src ='./images/LightImg1.jpg' 
+    setLightMood()
+    localStorage.setItem('userTheme', 'LightMood')
 
   }
 }
@@ -234,16 +242,19 @@ function signUserToFirebase() {
     alert("Uploading your details please wait a moment")
     createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) => {
       set(ref(db, "Web Users/" + userCredential.user.uid), {
-        fullname: fullName.value,
-        username: userName.value,
+        fullName: fullName.value,
+        userName: userName.value,
         emailAcc: email.value,
         passWord: password.value, 
         accountBalance: '0',
         userLevel: 'Novice',
-        availableGint: '0'
+        gintBalance: '0'
       }).then(() => {
+        
         signPage.style.display = 'none'
         alert('Sign up successfull')
+        displayBd.style.display = 'block'
+        getAllUserCredential(userCredential.user) 
       }).catch(() => {
         alert('not successfull')
       })
@@ -261,10 +272,12 @@ function loginUserToFirebase() {
   } else {
     alert('Please wait a moment')
     const auth = getAuth()
-    signInWithEmailAndPassword(auth, email.value, password.value).then(() => {
+    signInWithEmailAndPassword(auth, email.value, password.value).then((userCredential) => {
       alert('Sign in successfull')
       signPage.style.display = 'none'
       logPage.style.display = 'none'
+      displayBd.style.display = 'block'
+      getAllUserCredential(userCredential.user)
     })
   }
 }
@@ -296,6 +309,39 @@ function displayPrevImages() {
       currentIndex = (currentIndex - 1+ lightMoodImg.length) % lightMoodImg.length;
       appImg.src = lightMoodImg[currentIndex];
     }
+}
+function setDarkMoodOnLoad() {
+  moodButton.innerHTML = `<i class="fa-solid fa-cloud-sun" style= "color :var(--color2 );"></i>`
+document.getElementById('navMood').style.background = 'var(--color3)'
+onDarkMood = true
+changebodyBg(onDarkMood)
+appImg.src = './images/DarkImg1.jpg'
+}
+function setLightMood() {
+  moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
+document.getElementById('navMood').style.background = 'var(--color1)'
+onDarkMood = false
+changebodyBg(onDarkMood)
+appImg.src = './images/LightImg1.jpg'
+}
+function getAllUserCredential(user){
+  const userData = child(dbRef, 'Web Users/' + user.uid)
+  get(userData)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          var data = snapshot.val()
+          document.querySelector('.accountBalance').textContent = data.accountBalance
+          document.querySelector('.gintBalance').textContent = data.gintBalance
+          document.querySelector('.fullName').textContent = data.fullName
+          document.querySelector('.userLevel').textContent = data.userLevel
+          document.querySelector('.Username').textContent = data.userName
+          
+          console.log(data.emailAcc); // 
+        } 
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 }
 /* 
     .catch((error)=>{

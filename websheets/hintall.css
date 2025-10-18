@@ -400,7 +400,14 @@ main {
   height: fit-content;
 
 }
-
+.ngnContainer{
+  display: flex ;
+  width :100%;
+  justify-content :center ;
+  align-items: center ;
+  gap: 5px ;
+  margin-top :20px;
+}
 
 /*span tags*/
 .underling {
@@ -424,16 +431,19 @@ main {
 }
 
 .accountBalance {
-  display: block;
   font-size: 25px;
   font-weight: bold;
   margin-top: 15px;
   color: var(--color2);
-  text-align: center;
+  
 }
 
 .nairaNote {
+  color: var(--color2);
   font-size: 15px;
+  display: inline;
+  font-weight :bold;
+  margin-top: 20px ;
 }
 
 .countTime {
