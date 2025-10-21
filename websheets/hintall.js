@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-import { getAuth,onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"
-import { getDatabase, onValue, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
+import { getDatabase, onValue, ref, child, get, set, update, remove, push, increment } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js"
 const firebaseConfig = {
   apiKey: "AIzaSyCnCiDCRqoHtMrEPdwyOYppcxPf1QUdt1E",
   authDomain: "hintall.firebaseapp.com",
@@ -47,35 +47,37 @@ var profileMineBtn = document.getElementById('mineGint')
 var nextAppImgBtn = document.getElementById('nextImg')
 var prevAppImgBtn = document.getElementById('prevImg')
 var appImg = document.getElementById('appImg')
-const lightMoodImg= ['./images/LightImg1.jpg', './images/Lightimg2.jpg', './images/Lightimg3.jpg'];
-const darkMoodImg= ['./images/DarkImg1.jpg', './images/Darkimg2.jpg', './images/Darkimg3.jpg']; 
+const lightMoodImg = ['./images/LightImg1.jpg', './images/Lightimg2.jpg', './images/Lightimg3.jpg'];
+const darkMoodImg = ['./images/DarkImg1.jpg', './images/Darkimg2.jpg', './images/Darkimg3.jpg'];
 let currentIndex = 0;
-var displayBd = document.getElementById ('displayBd')
+var displayBd = document.getElementById('displayBd')
+var taskBtn = document.querySelectorAll('.taskBtn')
 
 
 //on window load check if user is signed in
 window.onload = function() {
   var userTheme = localStorage.getItem('userTheme')
-  onAuthStateChanged(auth, (user) =>{
+  onAuthStateChanged(auth, (user) => {
     if (user) {
       getAllUserCredential(user)
       displayBd.style.display = 'block'
-logPage.style.display = 'none'
-if (userTheme == 'DarkMood') {
-  setDarkMoodOnLoad()
-} else if (userTheme == 'LightMood') {
-  setLightMood()
-} else {
-  changebodyBg(false)
-}
+      logPage.style.display = 'none'
+      checkUserTaskList(user)
+      if (userTheme == 'DarkMood') {
+        setDarkMoodOnLoad()
+      } else if (userTheme == 'LightMood') {
+        setLightMood()
+      } else {
+        changebodyBg(false)
+      }
 
-    }else{
+    } else {
       displayBd.style.display = 'none'
       logPage.style.display = 'block'
     }
   })
 
-  
+
 }
 
 //Boolean variables 
@@ -102,6 +104,18 @@ prevAppImgBtn.addEventListener("click", displayPrevImages)
 //for each
 links.forEach(smoothScroll)
 pageLink.forEach(smoothScroll)
+taskBtn.forEach((eachBtn, index) => {
+  eachBtn.addEventListener('click', () => {
+
+    if (eachBtn.textContent == 'Gint Claimed') {
+      alert('Thank you for your participation. A new task will soon be available')
+    } else {
+      addGintsToBalance(index)
+      eachBtn.textContent = 'Gint Claimed'
+    }
+  })
+
+})
 
 //functions
 
@@ -245,16 +259,17 @@ function signUserToFirebase() {
         fullName: fullName.value,
         userName: userName.value,
         emailAcc: email.value,
-        passWord: password.value, 
-        accountBalance: '0',
+        passWord: password.value,
+        accountBalance: 0,
         userLevel: 'Novice',
-        gintBalance: '0'
+        gintBalance: 0,
+
       }).then(() => {
-        
+
         signPage.style.display = 'none'
         alert('Sign up successfull')
         displayBd.style.display = 'block'
-        getAllUserCredential(userCredential.user) 
+        getAllUserCredential(userCredential.user)
       }).catch(() => {
         alert('not successfull')
       })
@@ -292,56 +307,170 @@ function openMiningPage() {
     top: position
   });
 }
+
 function displayNextImages() {
   if (onDarkMood) {
-  currentIndex = (currentIndex + 1) % darkMoodImg.length;
-  appImg.src = darkMoodImg[currentIndex];
-} else {
-  currentIndex = (currentIndex + 1) % lightMoodImg.length;
-  appImg.src = lightMoodImg[currentIndex];
+    currentIndex = (currentIndex + 1) % darkMoodImg.length;
+    appImg.src = darkMoodImg[currentIndex];
+  } else {
+    currentIndex = (currentIndex + 1) % lightMoodImg.length;
+    appImg.src = lightMoodImg[currentIndex];
+  }
 }
-}
+
 function displayPrevImages() {
-   if (onDarkMood) {
-      currentIndex = (currentIndex - 1 + darkMoodImg.length) % darkMoodImg.length;
-      appImg.src = darkMoodImg[currentIndex];
-    } else {
-      currentIndex = (currentIndex - 1+ lightMoodImg.length) % lightMoodImg.length;
-      appImg.src = lightMoodImg[currentIndex];
-    }
+  if (onDarkMood) {
+    currentIndex = (currentIndex - 1 + darkMoodImg.length) % darkMoodImg.length;
+    appImg.src = darkMoodImg[currentIndex];
+  } else {
+    currentIndex = (currentIndex - 1 + lightMoodImg.length) % lightMoodImg.length;
+    appImg.src = lightMoodImg[currentIndex];
+  }
 }
+
 function setDarkMoodOnLoad() {
   moodButton.innerHTML = `<i class="fa-solid fa-cloud-sun" style= "color :var(--color2 );"></i>`
-document.getElementById('navMood').style.background = 'var(--color3)'
-onDarkMood = true
-changebodyBg(onDarkMood)
-appImg.src = './images/DarkImg1.jpg'
+  document.getElementById('navMood').style.background = 'var(--color3)'
+  onDarkMood = true
+  changebodyBg(onDarkMood)
+  appImg.src = './images/DarkImg1.jpg'
 }
+
 function setLightMood() {
   moodButton.innerHTML = `<i class="fa-solid fa-cloud-moon"></i>`
-document.getElementById('navMood').style.background = 'var(--color1)'
-onDarkMood = false
-changebodyBg(onDarkMood)
-appImg.src = './images/LightImg1.jpg'
+  document.getElementById('navMood').style.background = 'var(--color1)'
+  onDarkMood = false
+  changebodyBg(onDarkMood)
+  appImg.src = './images/LightImg1.jpg'
 }
-function getAllUserCredential(user){
+
+function getAllUserCredential(user) {
   const userData = child(dbRef, 'Web Users/' + user.uid)
   get(userData)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          var data = snapshot.val()
-          document.querySelector('.accountBalance').textContent = data.accountBalance
-          document.querySelector('.gintBalance').textContent = data.gintBalance
-          document.querySelector('.fullName').textContent = data.fullName
-          document.querySelector('.userLevel').textContent = data.userLevel
-          document.querySelector('.Username').textContent = data.userName
-          
-          console.log(data.emailAcc); // 
-        } 
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        var data = snapshot.val()
+        document.querySelector('.accountBalance').textContent = data.accountBalance
+        document.querySelector('.gintBalance').textContent = data.gintBalance
+        document.querySelector('.fullName').textContent = data.fullName
+        document.querySelector('.userLevel').textContent = data.userLevel
+        document.querySelector('.Username').textContent = data.userName
+
+        console.log(data.emailAcc); // 
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+function addGintsToBalance(param) {
+  if (param == '0') {
+    var alertMessage = 'Please hold while you are being redirected to our WhatsApp Channel '
+    var taskHref = "https://whatsapp.com/channel/0029VbBNhGoL2ATsajP7nG0v"
+    const gintReward = 40
+    proceedToTaskPage(taskNum = 'taskOne', alertMessage, taskHref, gintReward)
+  } else if (param == '1') {
+    var taskNum = 'taskTwo'
+    var alertMessage = 'Please hold while you are being redirected to our YouTube Channel '
+    var taskHref = "https://www.youtube.com/@theM672"
+    const gintReward = 40
+    proceedToTaskPage(taskNum, alertMessage, taskHref, gintReward)
+  } else if (param == '2') {
+    var taskNum = 'taskThree'
+    var alertMessage = 'Please hold while you are being redirected to our X page'
+    var taskHref = "https://x.com/maxonemman38801?t=x8J9pO6y8T3-sIvfunlNaQ&s=09"
+    const gintReward = 40
+    proceedToTaskPage(taskNum, alertMessage, taskHref, gintReward)
+  } else if (param == '3') {
+    var taskNum = 'taskFour'
+    var alertMessage = 'Please hold while you are being redirected to our Apk download page'
+    var taskHref = "https://apkpure.net/hintall/maxon.emmanuel.hintall/download "
+    const gintReward = 166
+    proceedToTaskPage(taskNum, alertMessage, taskHref, gintReward)
+  }
+}
+
+function proceedToTaskPage(taskNum, alertMessage, taskHerf, gintReward) {
+  alert(alertMessage)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const userId = user.uid
+      const taskRef = ref(db, `Web Users/${userId}/` + 'Task List/')
+      const gintBalanceRef = ref(db, `Web Users/${userId}`)
+      if (taskNum == 'taskOne') {
+        update(taskRef, {
+          taskOne: true
+        }).then(() => {
+          update(gintBalanceRef, {
+            gintBalance: increment(gintReward)
+          }).then(() => {
+            window.location.href = taskHerf
+          })
+
+        })
+      }
+      else if (taskNum == 'taskTwo') {
+        update(taskRef, {
+          taskTwo: true
+        }).then(() => {
+          update(gintBalanceRef, {
+            gintBalance: increment(gintReward)
+          }).then(() => {
+            window.location.href = taskHerf
+          })
+        })
+      }
+      else if (taskNum == 'taskThree') {
+        update(taskRef, {
+          taskThree: true
+        }).then(() => {
+          update(gintBalanceRef, {
+            gintBalance: increment(gintReward)
+          }).then(() => {
+            window.location.href = taskHerf
+          })
+        })
+      }
+      else if (taskNum == 'taskFour') {
+        update(taskRef, {
+          taskFour: true
+        }).then(() => {
+          update(gintBalanceRef, {
+            gintBalance: increment(gintReward)
+          }).then(() => {
+            window.location.href = taskHerf
+          })
+        })
+      }
+
+
+    }
+  })
+}
+
+function checkUserTaskList(user) {
+  const taskData = child(dbRef, 'Web Users/' + `${user.uid}/` + 'Task List')
+  get(taskData).then((snapshot) => {
+    if (snapshot.exists()) {
+      var taskBoolean = snapshot.val()
+      taskBtn.forEach((eachBtn, index) => {
+        if (index == '0' && taskBoolean.taskOne == true) {
+          eachBtn.textContent = 'Gint Claimed'
+        }
+        else if (index == '1' && taskBoolean.taskTwo == true) {
+          eachBtn.textContent = 'Gint Claimed'
+        }
+        else if (index == '2' && taskBoolean.taskThree == true) {
+          eachBtn.textContent = 'Gint Claimed'
+        }
+        else if (index == '3' && taskBoolean.taskFour == true) {
+          eachBtn.textContent = 'Gint Claimed'
+        }
+
       })
-      .catch((error) => {
-        console.error(error);
-      });
+    }
+  })
 }
 /* 
     .catch((error)=>{
