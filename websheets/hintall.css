@@ -362,7 +362,7 @@ main {
 
 .taskList {
   width: 100%;
-  height: 80%;
+  height: 75%;
 
   display: flex;
   flex-direction: column;
@@ -546,7 +546,7 @@ main {
 
 .plainText {
   margin-top: 20px;
-
+  word-wrap: brake;
   color: var(--color2);
 }
 

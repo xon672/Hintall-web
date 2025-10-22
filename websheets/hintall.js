@@ -52,7 +52,7 @@ const darkMoodImg = ['./images/DarkImg1.jpg', './images/Darkimg2.jpg', './images
 let currentIndex = 0;
 var displayBd = document.getElementById('displayBd')
 var taskBtn = document.querySelectorAll('.taskBtn')
-
+var startMiningGint = document.getElementById('startMining')
 
 //on window load check if user is signed in
 window.onload = function() {
@@ -101,6 +101,7 @@ profileMineBtn.addEventListener("click", openMiningPage)
 nextAppImgBtn.addEventListener("click", displayNextImages)
 prevAppImgBtn.addEventListener("click", displayPrevImages)
 
+
 //for each
 links.forEach(smoothScroll)
 pageLink.forEach(smoothScroll)
@@ -110,10 +111,9 @@ taskBtn.forEach((eachBtn, index) => {
     if (eachBtn.textContent == 'Gint Claimed') {
       alert('Thank you for your participation. A new task will soon be available')
     } else {
-      addGintsToBalance(index)
-      eachBtn.textContent = 'Gint Claimed'
+      addTaskGintsToBalance(index)
     }
-  })
+  }, {once : true})
 
 })
 
@@ -364,7 +364,7 @@ function getAllUserCredential(user) {
     });
 }
 
-function addGintsToBalance(param) {
+function addTaskGintsToBalance(param) {
   if (param == '0') {
     var alertMessage = 'Please hold while you are being redirected to our WhatsApp Channel '
     var taskHref = "https://whatsapp.com/channel/0029VbBNhGoL2ATsajP7nG0v"
@@ -472,6 +472,198 @@ function checkUserTaskList(user) {
     }
   })
 }
+// Timer variables
+let countdown;
+const totalSeconds = 6 * 60 * 60; // 6 hours
+let remainingSeconds = totalSeconds;
+let minedGints = 0;
+
+
+
+// Request notification permission
+function requestNotificationPermission() {
+  if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        console.log("Notification permission granted");
+      }
+    });
+  }
+}
+
+// Show push notification
+function showNotification(title, message) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    const notification = new Notification(title, {
+      body: message,
+      icon: "/icon.png", // Add your app icon path
+      badge: "/badge.png", // Add your badge icon path
+      tag: "mining-notification"
+    });
+
+    // Close notification after 5 seconds
+    setTimeout(() => {
+      notification.close();
+    }, 5000);
+
+    // Focus window when notification is clicked
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  }
+}
+
+// Show browser tab notification (falls back to this if push notifications are blocked)
+function showTabNotification(message) {
+  if (document.hidden) {
+    document.title = "⏰ " + message;
+
+    // Restore original title when user comes back to tab
+    const originalTitle = document.title;
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        document.title = originalTitle;
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+  }
+}
+
+// Format time as HH:MM:SS
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Start the countdown
+function startTimer() {
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  startBtn.disabled = true;
+  startBtn.textContent = "Mining in Progress...";
+
+  countdown = setInterval(() => {
+    remainingSeconds--;
+
+    // Update display
+    timerDisplay.textContent = formatTime(remainingSeconds);
+
+    // Check if timer has finished
+    if (remainingSeconds <= 0) {
+      clearInterval(countdown);
+      minedGints = 83; // Set mined Gints to 83
+      timerDisplay.textContent = `${minedGints} Gints Mined!`;
+      startBtn.disabled = false;
+      startBtn.textContent = "Add Gints to Balance";
+
+      // Show notification that mining is complete
+      showNotification("Mining Complete! 🎉", "You've mined 83 Gints! Click to add them to your balance.");
+      showTabNotification("Mining Complete - 83 Gints Mined!");
+    }
+  }, 1000);
+}
+
+// Add mined Gints to user balance in Firebase Realtime Database
+async function addGintsToBalance() {
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  try {
+    startBtn.disabled = true;
+    startBtn.textContent = "Adding Gints...";
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userId = user.uid;
+        const gintBalanceRef = ref(db, `Web Users/${userId}`);
+
+        update(gintBalanceRef, {
+          gintBalance: increment(minedGints)
+        }).then(() => {
+          // Notify user Gints have been added to database
+          timerDisplay.textContent = "Success! +83 Gints";
+          showNotification("Gints Added! 💰", "83 Gints have been added to your balance!");
+
+          // Restore the timer
+          setTimeout(() => {
+            resetTimer();
+          }, 2000);
+        }).catch((error) => {
+          console.error("Error updating database:", error);
+          timerDisplay.textContent = "Error adding Gints";
+          startBtn.disabled = false;
+          startBtn.textContent = "Try Again";
+        });
+      } else {
+        throw new Error("User not authenticated");
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in addGintsToBalance:", error);
+    timerDisplay.textContent = "Authentication error";
+    startBtn.disabled = false;
+    startBtn.textContent = "Try Again";
+  }
+}
+// Reset the timer
+function resetTimer() {
+  clearInterval(countdown);
+  remainingSeconds = totalSeconds;
+  minedGints = 0;
+
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  timerDisplay.textContent = formatTime(remainingSeconds);
+  startBtn.textContent = "Start Mining Gint";
+  startBtn.disabled = false;
+}
+
+// Button click event handler
+function handleStartClick() {
+  const startBtn = document.getElementById('startMining');
+
+  if (startBtn.textContent === "Start Mining Gint") {
+    startTimer();
+  } else if (startBtn.textContent === "Add Gints to Balance") {
+    addGintsToBalance();
+  } else if (startBtn.textContent === "Try Again") {
+    addGintsToBalance();
+  }
+}
+
+// Initialize the timer display
+document.addEventListener('DOMContentLoaded', function() {
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  // Request notification permission when page loads
+  requestNotificationPermission();
+
+  // Set initial display
+  timerDisplay.textContent = formatTime(remainingSeconds);
+
+  // Add click event listener to button
+  startBtn.addEventListener('click', handleStartClick);
+
+  // Check if user is logged in
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      startBtn.disabled = false;
+      startBtn.textContent = "Start Mining Gint";
+    } else {
+      startBtn.disabled = true;
+      startBtn.textContent = "Please Login to Mine";
+    }
+  });
+});
 /* 
     .catch((error)=>{
         const errorCode=error.code;
