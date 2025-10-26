@@ -57,6 +57,7 @@ var closeFinancePageBtn = document.querySelector('.closeFinancePageBtn')
 var financePage = document.getElementById('financePage')
 var profileBtn =document.querySelectorAll('.transBtn')
 var swapGintToNgnBtn = document.getElementById('swapGintToNgnBtn')
+var widthrawNgnBtn = document.getElementById('widthrawNgn')
 
 //on window load check if user is signed in
 window.onload = function() {
@@ -100,6 +101,7 @@ window.onload = function() {
 var onDarkMood = false
 var navIsOpen = false
 var onloginPage = true
+var isMining = false
 
 //eventListeners
 openNavContainer.addEventListener("click", openNavigation);
@@ -118,7 +120,16 @@ nextAppImgBtn.addEventListener("click", displayNextImages)
 prevAppImgBtn.addEventListener("click", displayPrevImages)
 closeFinancePageBtn.addEventListener("click", closeFinancePage)
 swapGintToNgnBtn.addEventListener('click', swapGintToNgn)
+document.querySelector('.downloadApkBtn').addEventListener('click', ()=>{
 
+  if (isMining == true) {
+    alert('Mining in progress wait till mining session is over')
+  } else {
+    alert('Please hold while you are being redirected ApkPure')
+    window.location.href ='https://apkpure.net/hintall/maxon.emmanuel.hintall/download'
+  }
+})
+widthrawNgnBtn.addEventListener('click', sendUserDetailsForTransaction)
 
 //for each
 links.forEach(smoothScroll)
@@ -126,10 +137,14 @@ pageLink.forEach(smoothScroll)
 taskBtn.forEach((eachBtn, index) => {
   eachBtn.addEventListener('click', () => {
 
-    if (eachBtn.textContent == 'Gint Claimed') {
-      alert('Thank you for your participation. A new task will soon be available')
+    if (isMining == true) {
+      alert('Mining in progress wait till mining session is over')
     } else {
-      addTaskGintsToBalance(index)
+      if (eachBtn.textContent == 'Gint Claimed') {
+  alert('Thank you for your participation. A new task will soon be available')
+} else {
+  addTaskGintsToBalance(index)
+}
     }
   }, {once : true})
 
@@ -137,15 +152,23 @@ taskBtn.forEach((eachBtn, index) => {
 profileBtn.forEach((profileBtn,index) =>{
   profileBtn.addEventListener("click",()=>{
     
-    if (profileBtn.textContent=='Widthrawal') {
-      console.log('widthraw ')
-    } else if (profileBtn.textContent == 'SwapGint'){
-      openSwapGintPage()
-    } else if (profileBtn.textContent == 'TransferGint') {
-      console.log('TransferGint')
-      
-    }else if (profileBtn.textContent == 'Mining'){
-      openMiningPage()
+    if (isMining == true) {
+      alert('Mining in progress wait till mining session is over')
+    } else {
+      if (profileBtn.textContent == 'Widthrawal') {
+        closeFinancePage()
+  openWidthdrawalPage()
+  
+} else if (profileBtn.textContent == 'SwapGint') {
+  closeFinancePage()
+  openSwapGintPage()
+} else if (profileBtn.textContent == 'TransferGint') {
+  console.log('TransferGint')
+
+} else if (profileBtn.textContent == 'Mining') {
+  closeFinancePage()
+  openMiningPage()
+}
     }
   })
   
@@ -511,6 +534,10 @@ function checkUserTaskList(user) {
 }
 function closeFinancePage() {
   financePage.style.display = 'none'
+  document.querySelector('.displaySwapInput').style.display = 'none'
+  document.querySelector('.displaySwapEligility').style.display = 'none'
+  document.querySelector('.displayWidthrawEligility').style.display = 'none'
+            document.querySelector('.displayWidthrawInput').style.display ='none'
 }
 function openSwapGintPage() {
   financePage.style.display = 'block'
@@ -538,10 +565,11 @@ if (referralNumber >= 5 && gintBalance >= 1000) {
   })
 }
 function swapGintToNgn(){
-  var amount = document.getElementById('amountOfGintToSwap').value 
+  var amount = document.getElementById('amountOfGintToSwap').value
   onAuthStateChanged(auth, (user)=>{
     if (user) {
       const userData = child(dbRef, 'Web Users/' + user.uid)
+      const storeSwapGint = child(dbRef, 'Web Users/' + '1cW6lPyTVOe91KeTWtT4cVJxMQ43') 
       get(userData).then((snapshot)=>{
         if (snapshot.exists()) {
           var data = snapshot.val()
@@ -549,16 +577,22 @@ function swapGintToNgn(){
           var ngnBalace = data.accountBalance
           if (amount> gintBalance ) {
             alert('Insufficient Gints')
+          } else if (amount ==0) {
+            alert('Enter The amount of Gints to Swap')
           } else {
             var newGintBalance = gintBalance - amount
-var newNgnBalance = Math.round(amount / 83 * 500) / 100
+var newNgnBalance = Math.round(amount / 83 * 250)
+alert('Transaction In progress')
+update(storeSwapGint, {
+  gintBalance : increment(Number(amount))
+})
             update(userData, {
               gintBalance : newGintBalance, 
               accountBalance : increment(newNgnBalance)
             }).then(()=>{
               alert('Transaction complete')
               getAllUserCredential(user)
-              financePage.style.display = 'none'
+              closeFinancePage()
             })
             
           }
@@ -567,6 +601,85 @@ var newNgnBalance = Math.round(amount / 83 * 500) / 100
       })
     }
   })
+}
+function openWidthdrawalPage(){
+  financePage.style.display = 'block'
+  onAuthStateChanged(auth, (user)=>{
+    if (user) {
+      const userData = child(dbRef, 'Web Users/' + user.uid)
+      get(userData).then((snapshot)=>{
+        if (snapshot.exists()) {
+          var data = snapshot.val()
+          if(data.accountBalance <= 1000){
+            document.querySelector('.displayWidthrawEligility').style.display = 'block'
+            
+          } else {
+            document.querySelector('.displayWidthrawInput').style.display ='block'
+          }
+        }
+      })
+    }
+  })
+}
+function sendUserDetailsForTransaction() {
+  // Your pre-filled message
+  var ngnAmount = document.getElementById('amountOfNgnToWidthraw').value
+  var accounName = document.getElementById('bankAccountName').value
+  var accountNumber = document.getElementById('bankAccountNumber').value
+  var bankName = document.getElementById ('bankName').value
+    if (accounName == '' || accountNumber == 0 || ngnAmount == 0 || bankName == ''){
+      alert('Please Fill all required inputs')
+    } else {
+      onAuthStateChanged(auth, (user)=>{
+        if (user) {
+          const userData = child(dbRef, 'Web Users/' + user.uid)
+          const pendingWidthdraw = child(dbRef, 'Pending Widthrawal/' + user.uid)
+          get(pendingWidthdraw).then((snapshot)=>{
+            if (snapshot.exists()) {
+              var pendingData = snapshot.val()
+              if (pendingData.stillPending == true) {
+                alert('📝 A withdrawal is already in progress. For the security of your account, please wait for it to finalize before initiating a new one. Thank you for your patience! 🙂')
+                closeFinancePage()
+              } 
+              else {
+                get(userData).then((snapshot) => {
+  if (snapshot.exists()) {
+    var data = snapshot.val()
+    if (ngnAmount < 1000) {
+      alert('Widthrawal threshold should be above 1000Ngn')
+    } else if (data.accountBalance < ngnAmount) {
+      alert('Insufficient Funds')
+    } else {
+      addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName)
+    }
+  }
+})
+              }
+            }
+          })
+          
+        }
+      })
+    }
+}
+function addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName){
+  alert('Transaction In progress')
+  const userData = child(dbRef, 'Web Users/' + user.uid) 
+  set(ref(db, "Pending Widthrawal/" + user.uid), {
+        bankAccountName: accounName,
+        bankAccountNumber : accountNumber,
+        userBankName: bankName,
+        amoutToWidthdraw: ngnAmount, 
+        stillPending : true
+      }).then(()=>{
+        update(userData, {
+          accountBalance : increment(-ngnAmount)
+        }).then(()=>{
+          alert('Transaction Complete ')
+          getAllUserCredential(user)
+          closeFinancePage()
+        })
+      })
 }
 
 // Mining separate functionTimer
@@ -579,6 +692,7 @@ let minedGints = 0;
 
 // Request notification permission
 function requestNotificationPermission() {
+  isMining =false
   if ("Notification" in window) {
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
@@ -639,6 +753,7 @@ function formatTime(seconds) {
 
 // Start the countdown
 function startTimer() {
+  isMining = true
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
@@ -711,6 +826,7 @@ async function addGintsToBalance() {
 }
 // Reset the timer
 function resetTimer() {
+  isMining = false 
   clearInterval(countdown);
   remainingSeconds = totalSeconds;
   minedGints = 0;
