@@ -191,6 +191,18 @@ main {
   text-decoration: none;
   
 }
+.closeFinancePageBtn {
+  width :fit-content ;
+  height :fit-content ;
+  background: none;
+  border: none;
+  font-size :45px;
+  color: var(--color1);
+  position :absolute ;
+  right :5%;
+  top: 2%;
+  
+}
 
 /*div tags*/
 #displayBd{
@@ -291,7 +303,7 @@ main {
   border-radius: 15px 15px 0px 0px;
   background: var(--color2);
   animation: fadeIn 2s;
-  display: none;
+  display: none ;
 }
 
 #SignPage {
@@ -307,7 +319,7 @@ main {
   overflow-y: scroll;
   overflow-x: wrap;
   padding-bottom: 40px;
-  display: none;
+  display: none ;
 }
 
 .accountValueation {
@@ -407,6 +419,21 @@ main {
   align-items: center ;
   gap: 5px ;
   margin-top :20px;
+}
+#financePage{
+  width: 100vw;
+  height: 70vh;
+  position :absolute ;
+  animation : 5.5s ;
+  border-radius: 15px 15px 0px 0px;
+  background: var(--color2);
+  display:none;
+  overflow-y: scroll;
+  overflow-x: wrap;
+  padding-bottom: 40px;
+  border: solid 2px ;
+  z-index :999 ;
+  bottom: 0;
 }
 
 /*span tags*/
@@ -549,7 +576,16 @@ main {
   word-wrap: brake;
   color: var(--color2);
 }
-
+.financePage>p{
+  width: 90vw;
+  font-size: 23px;
+  text-align: center;
+  color: var(--color1);
+  margin-top: 20px;
+  margin-bottom: 30px;
+  margin-left: 5vw;
+  margin-right: 5vw; 
+}
 /*js added selectors*/
 .newNavWidth {
   width: 60vw;

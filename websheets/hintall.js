@@ -53,6 +53,10 @@ let currentIndex = 0;
 var displayBd = document.getElementById('displayBd')
 var taskBtn = document.querySelectorAll('.taskBtn')
 var startMiningGint = document.getElementById('startMining')
+var closeFinancePageBtn = document.querySelector('.closeFinancePageBtn')
+var financePage = document.getElementById('financePage')
+var profileBtn =document.querySelectorAll('.transBtn')
+var swapGintToNgnBtn = document.getElementById('swapGintToNgnBtn')
 
 //on window load check if user is signed in
 window.onload = function() {
@@ -76,6 +80,18 @@ window.onload = function() {
       logPage.style.display = 'block'
     }
   })
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  // Request notification permission when page loads
+  requestNotificationPermission();
+
+  // Set initial display
+  timerDisplay.textContent = formatTime(remainingSeconds);
+
+  // Add click event listener to button
+  startBtn.addEventListener('click', handleStartClick);
+
 
 
 }
@@ -100,6 +116,8 @@ loginBtn.addEventListener("click", loginUserToFirebase)
 profileMineBtn.addEventListener("click", openMiningPage)
 nextAppImgBtn.addEventListener("click", displayNextImages)
 prevAppImgBtn.addEventListener("click", displayPrevImages)
+closeFinancePageBtn.addEventListener("click", closeFinancePage)
+swapGintToNgnBtn.addEventListener('click', swapGintToNgn)
 
 
 //for each
@@ -115,6 +133,22 @@ taskBtn.forEach((eachBtn, index) => {
     }
   }, {once : true})
 
+})
+profileBtn.forEach((profileBtn,index) =>{
+  profileBtn.addEventListener("click",()=>{
+    
+    if (profileBtn.textContent=='Widthrawal') {
+      console.log('widthraw ')
+    } else if (profileBtn.textContent == 'SwapGint'){
+      openSwapGintPage()
+    } else if (profileBtn.textContent == 'TransferGint') {
+      console.log('TransferGint')
+      
+    }else if (profileBtn.textContent == 'Mining'){
+      openMiningPage()
+    }
+  })
+  
 })
 
 //functions
@@ -263,6 +297,8 @@ function signUserToFirebase() {
         accountBalance: 0,
         userLevel: 'Novice',
         gintBalance: 0,
+        referralNumber : 0,
+        
 
       }).then(() => {
 
@@ -391,7 +427,7 @@ function addTaskGintsToBalance(param) {
   }
 }
 
-function proceedToTaskPage(taskNum, alertMessage, taskHerf, gintReward) {
+function proceedToTaskPage(taskNum,  alertMessage, taskHerf, gintReward) {
   alert(alertMessage)
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -471,8 +507,69 @@ function checkUserTaskList(user) {
       })
     }
   })
+
 }
-// Timer variables
+function closeFinancePage() {
+  financePage.style.display = 'none'
+}
+function openSwapGintPage() {
+  financePage.style.display = 'block'
+  onAuthStateChanged(auth, (user)=>{
+    if (user) {
+      const userData = child(dbRef, 'Web Users/' + user.uid)
+      get(userData).then((snapshot) =>{
+        if(snapshot.exists()){
+          var data = snapshot.val()
+var referralNumber = data.referralNumber
+var gintBalance = data.gintBalance
+
+if (referralNumber >= 5 && gintBalance >= 1000) {
+  // Both criteria are met - show swap input
+  document.querySelector('.displaySwapEligility').style.display = 'none'
+  document.querySelector('.displaySwapInput').style.display = 'block'
+} else {
+  // One or both criteria not met - show eligibility message
+  document.querySelector('.displaySwapEligility').style.display = 'block'
+  document.querySelector('.displaySwapInput').style.display = 'none'
+}
+        }
+      })
+    }
+  })
+}
+function swapGintToNgn(){
+  var amount = document.getElementById('amountOfGintToSwap').value 
+  onAuthStateChanged(auth, (user)=>{
+    if (user) {
+      const userData = child(dbRef, 'Web Users/' + user.uid)
+      get(userData).then((snapshot)=>{
+        if (snapshot.exists()) {
+          var data = snapshot.val()
+          var gintBalance = data.gintBalance
+          var ngnBalace = data.accountBalance
+          if (amount> gintBalance ) {
+            alert('Insufficient Gints')
+          } else {
+            var newGintBalance = gintBalance - amount
+var newNgnBalance = Math.round(amount / 83 * 500) / 100
+            update(userData, {
+              gintBalance : newGintBalance, 
+              accountBalance : increment(newNgnBalance)
+            }).then(()=>{
+              alert('Transaction complete')
+              getAllUserCredential(user)
+              financePage.style.display = 'none'
+            })
+            
+          }
+          
+        }
+      })
+    }
+  })
+}
+
+// Mining separate functionTimer
 let countdown;
 const totalSeconds = 6 * 60 * 60; // 6 hours
 let remainingSeconds = totalSeconds;
@@ -640,7 +737,7 @@ function handleStartClick() {
 }
 
 // Initialize the timer display
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
@@ -663,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
       startBtn.textContent = "Please Login to Mine";
     }
   });
-});
+});*/
 /* 
     .catch((error)=>{
         const errorCode=error.code;
