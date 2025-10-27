@@ -422,7 +422,7 @@ function getAllUserCredential(user) {
         document.querySelector('.userLevel').textContent = data.userLevel
         document.querySelector('.Username').textContent = data.userName
 
-        console.log(data.emailAcc); // 
+        // 
       }
     })
     .catch((error) => {
