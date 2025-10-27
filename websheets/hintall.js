@@ -1308,6 +1308,47 @@ function calculateUserLevel(referralNumber) {
     return 'Legendary';
   }
 }
+// Add these functions to fix the referral system
+
+function generateReferralCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+async function processReferral(newUserId, referrerId) {
+    try {
+        const referrerRef = ref(db, "Web Users/" + referrerId);
+        const snapshot = await get(referrerRef);
+        
+        if (snapshot.exists()) {
+            // Update referrer's referral count
+            await update(referrerRef, {
+                referralNumber: increment(1)
+            });
+            
+            // Add bonus to referrer (optional - you can adjust the amount)
+            await update(referrerRef, {
+                gintBalance: increment(50) // 50 Gint bonus for referrer
+            });
+            
+            // Add bonus to new user (optional)
+            const newUserRef = ref(db, "Web Users/" + newUserId);
+            await update(newUserRef, {
+                gintBalance: increment(25) // 25 Gint bonus for new user
+            });
+            
+            console.log('Referral processed successfully');
+        } else {
+            console.log('Referrer ID not found');
+        }
+    } catch (error) {
+        console.error('Error processing referral:', error);
+    }
+}
 
 
 // Initialize the timer display
