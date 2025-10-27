@@ -63,29 +63,57 @@ var userIdSlice = ''
 
 //on window load check if user is signed in
 window.onload = function() {
-  var userTheme = localStorage.getItem('userTheme')
+  var userTheme = localStorage.getItem('userTheme');
   autoFillReferralFromURL();
+
+  // SHOW LOADING IMMEDIATELY
+  showLoadingState();
+
+  let dataLoaded = false;
+  let authChecked = false;
+
+  function checkIfCanHideLoading() {
+    if (dataLoaded && authChecked) {
+      // Wait a tiny bit for UI to render, then hide loading
+      setTimeout(hideLoadingState, 100);
+    }
+  }
+
   onAuthStateChanged(auth, (user) => {
+    authChecked = true;
+
     if (user) {
-      userIdSlice = user.uid.slice(18)
-      getAllUserCredential(user)
-      displayBd.style.display = 'block'
-      logPage.style.display = 'none'
-      checkUserTaskList(user)
+      userIdSlice = user.uid.slice(18);
 
-      // INITIALIZE MINING - ADD THIS LINE
-      initMining();
+      getAllUserCredential(user).then(() => {
+        dataLoaded = true;
 
-      if (userTheme == 'DarkMood') {
-        setDarkMoodOnLoad()
-      } else if (userTheme == 'LightMood') {
-        setLightMood()
-      } else {
-        changebodyBg(false)
-      }
+        displayBd.style.display = 'block';
+        logPage.style.display = 'none';
+        checkUserTaskList(user);
+        initMining();
+
+        if (userTheme == 'DarkMood') {
+          setDarkMoodOnLoad();
+        } else if (userTheme == 'LightMood') {
+          setLightMood();
+        } else {
+          changebodyBg(false);
+        }
+
+        checkIfCanHideLoading();
+
+      }).catch(error => {
+        dataLoaded = true;
+        hideLoadingState();
+        console.error('Error loading user data:', error);
+      });
+
     } else {
-      displayBd.style.display = 'none'
-      logPage.style.display = 'block'
+      dataLoaded = true;
+      displayBd.style.display = 'none';
+      logPage.style.display = 'block';
+      checkIfCanHideLoading();
     }
   });
 
@@ -93,8 +121,19 @@ window.onload = function() {
   const startBtn = document.getElementById('startMining');
 
   requestNotificationPermission();
-  timerDisplay.textContent = formatTime(remainingSeconds);
-  startBtn.addEventListener('click', handleStartClick);
+  if (timerDisplay) {
+    timerDisplay.textContent = formatTime(remainingSeconds);
+  }
+  if (startBtn) {
+    startBtn.addEventListener('click', handleStartClick);
+  }
+
+  // Fallback - hide loading after 3 seconds max (reduced from 8)
+  setTimeout(() => {
+    if (!dataLoaded || !authChecked) {
+      hideLoadingState();
+    }
+  }, 3000);
 }
 
 
@@ -426,39 +465,41 @@ function setLightMood() {
 }
 
 function getAllUserCredential(user) {
-  const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
-  get(userData)
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        var data = snapshot.val();
+  return new Promise((resolve, reject) => {
+    const userData = child(dbRef, 'Web Users/' + user.uid.slice(18));
+    get(userData)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          var data = snapshot.val();
+          const referralNumber = data.referralNumber || 0;
+          const userLevel = calculateUserLevel(referralNumber);
 
-        // Calculate user level based on referrals
-        const referralNumber = data.referralNumber || 0;
-        const userLevel = calculateUserLevel(referralNumber);
+          // Update UI elements - wait for DOM to be ready
+          setTimeout(() => {
+            const balanceElement = document.querySelector('.accountBalance');
+            const gintElement = document.querySelector('.gintBalance');
+            const nameElement = document.querySelector('.fullName');
+            const levelElement = document.querySelector('.userLevel');
+            const usernameElement = document.querySelector('.Username');
 
-        // Update user level in database if it changed
-        if (data.userLevel !== userLevel) {
-          update(userData, {
-            userLevel: userLevel
-          });
+            if (balanceElement) balanceElement.textContent = data.accountBalance || 0;
+            if (gintElement) gintElement.textContent = data.gintBalance || 0;
+            if (nameElement) nameElement.textContent = data.fullName || 'User';
+            if (levelElement) levelElement.textContent = userLevel;
+            if (usernameElement) usernameElement.textContent = data.userName || 'Username';
+
+            displayReferralStats(data);
+            resolve();
+          }, 50);
+
+        } else {
+          reject(new Error('User data not found'));
         }
-
-        // Update UI with user data
-        document.querySelector('.accountBalance').textContent = data.accountBalance;
-        document.querySelector('.gintBalance').textContent = data.gintBalance;
-        document.querySelector('.fullName').textContent = data.fullName;
-        document.querySelector('.userLevel').textContent = userLevel; // Use calculated level
-        document.querySelector('.Username').textContent = data.userName;
-
-        // Display referral stats
-        displayReferralStats(data);
-
-
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 }
 
 function addTaskGintsToBalance(param) {
@@ -799,10 +840,10 @@ const miningDuration = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
 let miningWorker;
 
 // Web Worker function
-function createMiningWorker() {
+function createMiningWorker(remainingSecs = totalSeconds) {
   const workerCode = `
     let countdown;
-    let remainingSeconds = ${totalSeconds};
+    let remainingSeconds = ${remainingSecs};
     
     self.onmessage = function(e) {
       if (e.data === 'start') {
@@ -821,11 +862,10 @@ function createMiningWorker() {
       }
     };
   `;
-  
+
   const blob = new Blob([workerCode], { type: 'application/javascript' });
   return new Worker(URL.createObjectURL(blob));
 }
-
 // Request notification permission
 function requestNotificationPermission() {
   isMining = false;
@@ -886,25 +926,25 @@ function formatTime(seconds) {
 // Check for completed mining sessions
 function checkCompletedMining() {
   const savedStartTime = localStorage.getItem('miningStartTime');
-  
+
   if (savedStartTime) {
     const miningStartTime = parseInt(savedStartTime);
     const elapsed = Date.now() - miningStartTime;
-    
+
     // If mining completed while browser was closed
     if (elapsed >= miningDuration) {
       minedGints = 83;
-      
+
       // Send completion notification
       showNotification("⛏️ Mining Complete!", "You've mined 83 Gints! Open the app to claim your reward.");
-      
+
       // Also show tab notification for better visibility
       showTabNotification("Mining Complete! Claim 83 Gints");
-      
+
       // Update UI if user is on the page
       const timerDisplay = document.querySelector('.countTime');
       const startBtn = document.getElementById('startMining');
-      
+
       if (timerDisplay && startBtn) {
         timerDisplay.textContent = `${minedGints} Gints Mined!`;
         startBtn.disabled = false;
@@ -923,11 +963,11 @@ function handleMiningCompletion() {
   timerDisplay.textContent = `${minedGints} Gints Mined!`;
   startBtn.disabled = false;
   startBtn.textContent = "Add Gints to Balance";
-  
+
   // Send notification
   showNotification("⛏️ Mining Complete!", "You've mined 83 Gints! Click to claim your reward.");
   showTabNotification("Mining Complete! Claim 83 Gints");
-  
+
   // Clear the saved start time
   localStorage.removeItem('miningStartTime');
 }
@@ -935,25 +975,25 @@ function handleMiningCompletion() {
 // Check mining status on page load
 function checkMiningStatus() {
   const savedStartTime = localStorage.getItem('miningStartTime');
-  
+
   if (savedStartTime) {
     miningStartTime = parseInt(savedStartTime);
     const elapsed = Date.now() - miningStartTime;
-    
+
     if (elapsed < miningDuration) {
       // Mining still in progress - resume
       const remainingMs = miningDuration - elapsed;
       remainingSeconds = Math.floor(remainingMs / 1000);
-      
+
       isMining = true;
       const timerDisplay = document.querySelector('.countTime');
       const startBtn = document.getElementById('startMining');
-      
+
       startBtn.disabled = true;
       startBtn.textContent = "Mining in Progress...";
-      
-      // Start visual countdown with remaining time
-      miningWorker = createMiningWorker();
+
+      // Start visual countdown with ACTUAL remaining time
+      miningWorker = createMiningWorker(remainingSeconds); // PASS THE CALCULATED TIME
       miningWorker.onmessage = function(e) {
         if (e.data === 'completed') {
           handleMiningCompletion();
@@ -962,22 +1002,21 @@ function checkMiningStatus() {
         }
       };
       miningWorker.postMessage('start');
-      
+
     } else {
       // Mining completed while browser was closed
       handleMiningCompletion();
     }
   }
 }
-
 // Initialize mining
 function initMining() {
   // Check for any completed mining sessions first
   checkCompletedMining();
-  
+
   // Then check current mining status
   checkMiningStatus();
-  
+
   // Set up periodic checks for completion (every minute)
   setInterval(checkCompletedMining, 60000);
 }
@@ -986,19 +1025,19 @@ function initMining() {
 function startTimer() {
   miningStartTime = Date.now();
   isMining = true;
-  
+
   // Save to localStorage
   localStorage.setItem('miningStartTime', miningStartTime.toString());
-  
+
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
   startBtn.disabled = true;
   startBtn.textContent = "Mining in Progress...";
 
-  // Start visual countdown
-  miningWorker = createMiningWorker();
-  
+  // Start visual countdown with current remaining seconds
+  miningWorker = createMiningWorker(remainingSeconds); // PASS CURRENT REMAINING SECONDS
+
   miningWorker.onmessage = function(e) {
     if (e.data === 'completed') {
       handleMiningCompletion();
@@ -1058,18 +1097,18 @@ function resetTimer() {
     miningWorker.postMessage('stop');
     miningWorker.terminate();
   }
-  
+
   remainingSeconds = totalSeconds;
   minedGints = 0;
   miningStartTime = null;
-  
+
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
   timerDisplay.textContent = formatTime(remainingSeconds);
   startBtn.textContent = "Start Mining Gint";
   startBtn.disabled = false;
-  
+
   // Clear saved state
   localStorage.removeItem('miningStartTime');
 }
@@ -1408,72 +1447,73 @@ function calculateUserLevel(referralNumber) {
 // Add these functions to fix the referral system
 
 function generateReferralCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 async function processReferral(newUserId, referrerId) {
-    try {
-        const referrerRef = ref(db, "Web Users/" + referrerId);
-        const snapshot = await get(referrerRef);
-        
-        if (snapshot.exists()) {
-            // Update referrer's referral count
-            await update(referrerRef, {
-                referralNumber: increment(1)
-            });
-            
-            // Add bonus to referrer (optional - you can adjust the amount)
-            await update(referrerRef, {
-                gintBalance: increment(50) // 50 Gint bonus for referrer
-            });
-            
-            // Add bonus to new user (optional)
-            const newUserRef = ref(db, "Web Users/" + newUserId);
-            await update(newUserRef, {
-                gintBalance: increment(25) // 25 Gint bonus for new user
-            });
-            
-            console.log('Referral processed successfully');
-        } else {
-            console.log('Referrer ID not found');
-        }
-    } catch (error) {
-        console.error('Error processing referral:', error);
+  try {
+    const referrerRef = ref(db, "Web Users/" + referrerId);
+    const snapshot = await get(referrerRef);
+
+    if (snapshot.exists()) {
+      // Update referrer's referral count
+      await update(referrerRef, {
+        referralNumber: increment(1)
+      });
+
+      // Add bonus to referrer (optional - you can adjust the amount)
+      await update(referrerRef, {
+        gintBalance: increment(50) // 50 Gint bonus for referrer
+      });
+
+      // Add bonus to new user (optional)
+      const newUserRef = ref(db, "Web Users/" + newUserId);
+      await update(newUserRef, {
+        gintBalance: increment(25) // 25 Gint bonus for new user
+      });
+
+      console.log('Referral processed successfully');
+    } else {
+      console.log('Referrer ID not found');
     }
+  } catch (error) {
+    console.error('Error processing referral:', error);
+  }
 }
+
 function saveTimerState(seconds, isRunning, minedGints) {
-    const timerState = {
-        remainingSeconds: seconds,
-        isMining: isRunning,
-        minedGints: minedGints,
-        timestamp: Date.now()
-    };
-    localStorage.setItem('miningTimerState', JSON.stringify(timerState));
+  const timerState = {
+    remainingSeconds: seconds,
+    isMining: isRunning,
+    minedGints: minedGints,
+    timestamp: Date.now()
+  };
+  localStorage.setItem('miningTimerState', JSON.stringify(timerState));
 }
 
 // Load timer state from localStorage
 function loadTimerState() {
-    const saved = localStorage.getItem('miningTimerState');
-    if (saved) {
-        const timerState = JSON.parse(saved);
-        
-        // Check if saved state is older than 6 hours (expired)
-        const timeElapsed = Date.now() - timerState.timestamp;
-        const sixHoursInMs = 6 * 60 * 60 * 1000;
-        
-        if (timeElapsed < sixHoursInMs) {
-            return timerState;
-        } else {
-            // Timer expired, clear saved state
-            localStorage.removeItem('miningTimerState');
-        }
+  const saved = localStorage.getItem('miningTimerState');
+  if (saved) {
+    const timerState = JSON.parse(saved);
+
+    // Check if saved state is older than 6 hours (expired)
+    const timeElapsed = Date.now() - timerState.timestamp;
+    const sixHoursInMs = 6 * 60 * 60 * 1000;
+
+    if (timeElapsed < sixHoursInMs) {
+      return timerState;
+    } else {
+      // Timer expired, clear saved state
+      localStorage.removeItem('miningTimerState');
     }
-    return null;
+  }
+  return null;
 }
 
 
@@ -1502,6 +1542,83 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+// Add these functions for animated loading
+function showLoadingState() {
+  // Create animated loading element if it doesn't exist
+  let loadingElement = document.getElementById('dataLoadingText');
+
+  if (!loadingElement) {
+    loadingElement = document.createElement('div');
+    loadingElement.id = 'dataLoadingText';
+    loadingElement.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, var(--color1), var(--color2));
+                color: white;
+                padding: 30px;
+                border-radius: 15px;
+                z-index: 10000;
+                font-size: 18px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                border: 2px solid var(--color3);
+                min-width: 250px;
+            ">
+                <div style="margin-bottom: 15px; font-size: 24px;">⏳</div>
+                <div style="margin-bottom: 10px; font-weight: bold;">Loading Your Data</div>
+                <div class="loading-dots" style="font-size: 14px; opacity: 0.9;">
+                    Fetching account information<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+                <div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+                    Please wait a moment
+                </div>
+            </div>
+        `;
+    document.body.appendChild(loadingElement);
+
+    // Add CSS animation for dots
+    const style = document.createElement('style');
+    style.textContent = `
+            @keyframes dotPulse {
+                0%, 20% { opacity: 0; }
+                50% { opacity: 1; }
+                80%, 100% { opacity: 0; }
+            }
+            .loading-dots .dot:nth-child(1) { animation: dotPulse 1.5s infinite; }
+            .loading-dots .dot:nth-child(2) { animation: dotPulse 1.5s infinite 0.5s; }
+            .loading-dots .dot:nth-child(3) { animation: dotPulse 1.5s infinite 1s; }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translate(-50%, -60%); }
+                to { opacity: 1; transform: translate(-50%, -50%); }
+            }
+            #dataLoadingText > div {
+                animation: fadeIn 0.5s ease-out;
+            }
+        `;
+    document.head.appendChild(style);
+  } else {
+    loadingElement.style.display = 'block';
+  }
+}
+
+function hideLoadingState() {
+  const loadingElement = document.getElementById('dataLoadingText');
+  if (loadingElement) {
+    // Add fade out animation
+    loadingElement.style.opacity = '0';
+    loadingElement.style.transition = 'opacity 0.3s ease-out';
+
+    setTimeout(() => {
+      loadingElement.style.display = 'none';
+      loadingElement.style.opacity = '1';
+    }, 300);
+  }
+}
+
+
 /* 
     .catch((error)=>{
         const errorCode=error.code;
