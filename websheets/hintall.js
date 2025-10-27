@@ -66,27 +66,16 @@ window.onload = function() {
   var userTheme = localStorage.getItem('userTheme');
   autoFillReferralFromURL();
 
-  // SHOW LOADING IMMEDIATELY
+  // Show loading immediately
   showLoadingState();
 
-  let dataLoaded = false;
-  let authChecked = false;
-
-  function checkIfCanHideLoading() {
-    if (dataLoaded && authChecked) {
-      // Wait a tiny bit for UI to render, then hide loading
-      setTimeout(hideLoadingState, 100);
-    }
-  }
-
   onAuthStateChanged(auth, (user) => {
-    authChecked = true;
-
     if (user) {
       userIdSlice = user.uid.slice(18);
 
       getAllUserCredential(user).then(() => {
-        dataLoaded = true;
+        // Hide loading when data is ready
+        hideLoadingState();
 
         displayBd.style.display = 'block';
         logPage.style.display = 'none';
@@ -100,20 +89,15 @@ window.onload = function() {
         } else {
           changebodyBg(false);
         }
-
-        checkIfCanHideLoading();
-
       }).catch(error => {
-        dataLoaded = true;
         hideLoadingState();
         console.error('Error loading user data:', error);
       });
 
     } else {
-      dataLoaded = true;
+      hideLoadingState();
       displayBd.style.display = 'none';
       logPage.style.display = 'block';
-      checkIfCanHideLoading();
     }
   });
 
@@ -128,12 +112,8 @@ window.onload = function() {
     startBtn.addEventListener('click', handleStartClick);
   }
 
-  // Fallback - hide loading after 3 seconds max (reduced from 8)
-  setTimeout(() => {
-    if (!dataLoaded || !authChecked) {
-      hideLoadingState();
-    }
-  }, 3000);
+  // Safety timeout - hide loading after 3 seconds
+  setTimeout(hideLoadingState, 3000);
 }
 
 
@@ -883,9 +863,7 @@ function showNotification(title, message) {
   if ("Notification" in window && Notification.permission === "granted") {
     const notification = new Notification(title, {
       body: message,
-      icon: "/icon.png",
-      badge: "/badge.png",
-      tag: "mining-notification"
+      icon: "/icon.png"
     });
 
     setTimeout(() => {
@@ -1544,79 +1522,137 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 // Add these functions for animated loading
 function showLoadingState() {
-  // Create animated loading element if it doesn't exist
-  let loadingElement = document.getElementById('dataLoadingText');
+  // Remove any existing loading first
+  hideLoadingState();
 
-  if (!loadingElement) {
-    loadingElement = document.createElement('div');
-    loadingElement.id = 'dataLoadingText';
-    loadingElement.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, var(--color1), var(--color2));
-                color: white;
-                padding: 30px;
-                border-radius: 15px;
-                z-index: 10000;
-                font-size: 18px;
-                text-align: center;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                border: 2px solid var(--color3);
-                min-width: 250px;
-            ">
-                <div style="margin-bottom: 15px; font-size: 24px;">⏳</div>
-                <div style="margin-bottom: 10px; font-weight: bold;">Loading Your Data</div>
-                <div class="loading-dots" style="font-size: 14px; opacity: 0.9;">
-                    Fetching account information<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-                </div>
-                <div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
-                    Please wait a moment
-                </div>
-            </div>
-        `;
-    document.body.appendChild(loadingElement);
+  // Create simple loading element
+  const loadingElement = document.createElement('div');
+  loadingElement.id = 'dataLoadingText';
+  loadingElement.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        font-family: Arial, sans-serif;
+    `;
 
-    // Add CSS animation for dots
-    const style = document.createElement('style');
-    style.textContent = `
-            @keyframes dotPulse {
-                0%, 20% { opacity: 0; }
-                50% { opacity: 1; }
-                80%, 100% { opacity: 0; }
-            }
-            .loading-dots .dot:nth-child(1) { animation: dotPulse 1.5s infinite; }
-            .loading-dots .dot:nth-child(2) { animation: dotPulse 1.5s infinite 0.5s; }
-            .loading-dots .dot:nth-child(3) { animation: dotPulse 1.5s infinite 1s; }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translate(-50%, -60%); }
-                to { opacity: 1; transform: translate(-50%, -50%); }
-            }
-            #dataLoadingText > div {
-                animation: fadeIn 0.5s ease-out;
-            }
-        `;
-    document.head.appendChild(style);
-  } else {
-    loadingElement.style.display = 'block';
-  }
+  loadingElement.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            min-width: 200px;
+        ">
+            <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+            <div style="font-weight: bold; margin-bottom: 10px; color: #333;">Loading Your Data</div>
+            <div style="color: #666; font-size: 14px;">Please wait...</div>
+        </div>
+    `;
+
+  document.body.appendChild(loadingElement);
 }
 
 function hideLoadingState() {
   const loadingElement = document.getElementById('dataLoadingText');
   if (loadingElement) {
-    // Add fade out animation
-    loadingElement.style.opacity = '0';
-    loadingElement.style.transition = 'opacity 0.3s ease-out';
-
-    setTimeout(() => {
-      loadingElement.style.display = 'none';
-      loadingElement.style.opacity = '1';
-    }, 300);
+    loadingElement.remove();
   }
 }
+/*function createBrowserNotification(title, message) {
+  // Remove any existing notification
+  const existingNotification = document.getElementById('browserNotification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  const notificationElement = document.createElement('div');
+  notificationElement.id = 'browserNotification';
+  notificationElement.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--color1), var(--color2));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 9998;
+            font-size: 14px;
+            text-align: left;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            border: 2px solid var(--color3);
+            max-width: 300px;
+            font-family: Arial, sans-serif;
+            animation: notificationSlideIn 0.5s ease-out;
+        ">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <div style="font-size: 20px; margin-right: 10px;">💰</div>
+                <div style="font-weight: bold; font-size: 16px;">${title}</div>
+            </div>
+            <div style="font-size: 12px; opacity: 0.9; line-height: 1.4;">${message}</div>
+            <div style="text-align: right; margin-top: 10px;">
+                <button onclick="document.getElementById('browserNotification').remove()" style="
+                    background: rgba(255,255,255,0.2);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    cursor: pointer;
+                ">Close</button>
+            </div>
+        </div>
+    `;
+
+  // Add notification styles
+  const notificationStyle = document.createElement('style');
+  notificationStyle.id = 'notificationStyles';
+  notificationStyle.textContent = `
+        #browserNotification {
+            all: initial !important;
+            font-family: Arial, sans-serif !important;
+        }
+        #browserNotification * {
+            all: unset !important;
+            font-family: Arial, sans-serif !important;
+            box-sizing: border-box !important;
+        }
+        @keyframes notificationSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(100px) !important; 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) !important; 
+            }
+        }
+        #browserNotification > div {
+            animation: notificationSlideIn 0.5s ease-out !important;
+        }
+    `;
+
+  document.head.appendChild(notificationStyle);
+  document.body.appendChild(notificationElement);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (notificationElement.parentNode) {
+      notificationElement.remove();
+    }
+    if (notificationStyle.parentNode) {
+      notificationStyle.remove();
+    }
+  }, 5000);
+}*/
 
 
 /* 
