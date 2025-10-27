@@ -457,7 +457,7 @@ function getAllUserCredential(user) {
         // Display referral stats
         displayReferralStats(data);
 
-        console.log(data.emailAcc);
+
       }
     })
     .catch((error) => {
@@ -975,7 +975,7 @@ function createReferralLink() {
 }
 
 function shareReferralLink() {
-  console.log('click')
+
   if (isMining == true) {
     alert('Mining in progress wait till mining section is over')
   } else {
