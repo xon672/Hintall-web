@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Referral System</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #555;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .referral-link-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px dashed #ddd;
+        }
+
+        .referral-link {
+            word-break: break-all;
+            font-family: monospace;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-info {
+            background: #e9f7fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .referral-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .referral-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .referral-item:last-child {
+            border-bottom: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: #28a745;
+        }
+
+        .share-btn {
+            background: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sign Up Card -->
+        <div class="card">
+            <h1>Join Our Community</h1>
+            <h2>Sign up with a referral code</h2>
+            
+            <div id="signupForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Create a password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="referralCode">Referral Code (Optional)</label>
+                    <input type="text" id="referralCode" placeholder="Enter referral code if you have one">
+                </div>
+                
+                <button id="signupBtn" onclick="handleSignup()">Create Account</button>
+            </div>
+            
+            <div id="signupSuccess" class="success-message hidden">
+                Account created successfully! You can now share your referral link.
+            </div>
+            
+            <div id="signupError" class="error-message hidden"></div>
+        </div>
+        
+        <!-- Referral Card -->
+        <div class="card">
+            <h1>Your Referral Dashboard</h1>
+            <h2>Share and earn rewards</h2>
+            
+            <div id="userInfo" class="user-info hidden">
+                <p>Welcome, <span id="userEmail"></span>!</p>
+                <p>Your Referral Code: <strong id="userReferralCode"></strong></p>
+            </div>
+            
+            <div id="referralLinkContainer" class="referral-link-container hidden">
+                <p>Your referral link:</p>
+                <p class="referral-link" id="referralLinkText"></p>
+                <div class="action-buttons">
+                    <button class="copy-btn" onclick="copyReferralLink()">Copy Link</button>
+                    <button class="share-btn" onclick="shareReferralLink()">Share</button>
+                </div>
+            </div>
+            
+            <div id="statsContainer" class="stats-container hidden">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReferrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="referralRank">#0</div>
+                    <div class="stat-label">Your Rank</div>
+                </div>
+            </div>
+            
+            <div id="referralListContainer" class="hidden">
+                <h3>Your Referrals</h3>
+                <div class="referral-list" id="referralList">
+                    <!-- Referral items will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div id="loginPrompt">
+                <p>Please sign up or log in to access your referral dashboard.</p>
+                <button onclick="showLoginForm()">Log In</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const signupForm = document.getElementById('signupForm');
+        const signupSuccess = document.getElementById('signupSuccess');
+        const signupError = document.getElementById('signupError');
+        const userInfo = document.getElementById('userInfo');
+        const referralLinkContainer = document.getElementById('referralLinkContainer');
+        const statsContainer = document.getElementById('statsContainer');
+        const referralListContainer = document.getElementById('referralListContainer');
+        const loginPrompt = document.getElementById('loginPrompt');
+        const userEmail = document.getElementById('userEmail');
+        const userReferralCode = document.getElementById('userReferralCode');
+        const referralLinkText = document.getElementById('referralLinkText');
+        const totalReferrals = document.getElementById('totalReferrals');
+        const referralRank = document.getElementById('referralRank');
+        const referralList = document.getElementById('referralList');
+
+        // Check for referral code in URL
+        function getReferralCodeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('ref');
+        }
+
+        // Auto-fill referral code if present in URL
+        window.onload = function() {
+            const urlReferralCode = getReferralCodeFromURL();
+            if (urlReferralCode) {
+                document.getElementById('referralCode').value = urlReferralCode;
+            }
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    showUserDashboard(user);
+                }
+            });
+        };
+
+        // Generate a unique referral code
+        function generateReferralCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Handle user signup
+        async function handleSignup() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const referralCode = document.getElementById('referralCode').value;
+            
+            // Basic validation
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return;
+            }
+            
+            const signupBtn = document.getElementById('signupBtn');
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating Account...';
+            
+            try {
+                // Create user with Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Generate a referral code for the new user
+                const userReferralCode = generateReferralCode();
+                
+                // Prepare user data
+                const userData = {
+                    email: email,
+                    referralCode: userReferralCode,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // If a referral code was provided, process the referral
+                if (referralCode) {
+                    userData.referredBy = referralCode;
+                    
+                    // Get the referrer's user ID from the referral code
+                    const referralSnapshot = await database.ref('referralCodes/' + referralCode).once('value');
+                    
+                    if (referralSnapshot.exists()) {
+                        const referrerUserId = referralSnapshot.val();
+                        
+                        // Add the new user to the referrer's referral list
+                        await database.ref('users/' + referrerUserId + '/referrals/' + user.uid).set({
+                            email: email,
+                            joinedAt: new Date().toISOString()
+                        });
+                        
+                        console.log(`User ${user.uid} added to referrer ${referrerUserId}'s referral list`);
+                    } else {
+                        console.warn('Invalid referral code:', referralCode);
+                    }
+                }
+                
+                // Save user data to database
+                await database.ref('users/' + user.uid).set(userData);
+                
+                // Save referral code to lookup table
+                await database.ref('referralCodes/' + userReferralCode).set(user.uid);
+                
+                // Show success message
+                signupForm.classList.add('hidden');
+                signupSuccess.classList.remove('hidden');
+                
+                // Show user dashboard
+                showUserDashboard(user);
+                
+            } catch (error) {
+                console.error('Error during signup:', error);
+                showError(error.message);
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Create Account';
+            }
+        }
+
+        // Show user dashboard after login/signup
+        function showUserDashboard(user) {
+            // Hide login prompt and show user dashboard
+            loginPrompt.classList.add('hidden');
+            userInfo.classList.remove('hidden');
+            referralLinkContainer.classList.remove('hidden');
+            statsContainer.classList.remove('hidden');
+            referralListContainer.classList.remove('hidden');
+            
+            // Load user data
+            loadUserData(user.uid);
+        }
+
+        // Load user data from Firebase
+        async function loadUserData(userId) {
+            try {
+                const userSnapshot = await database.ref('users/' + userId).once('value');
+                
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.val();
+                    
+                    // Update UI with user data
+                    userEmail.textContent = userData.email;
+                    userReferralCode.textContent = userData.referralCode;
+                    
+                    // Create referral link
+                    const referralLink = `${window.location.origin}${window.location.pathname}?ref=${userData.referralCode}`;
+                    referralLinkText.textContent = referralLink;
+                    
+                    // Load referral stats
+                    if (userData.referrals) {
+                        const referralCount = Object.keys(userData.referrals).length;
+                        totalReferrals.textContent = referralCount;
+                        referralRank.textContent = `#${referralCount + 1}`;
+                        
+                        // Populate referral list
+                        referralList.innerHTML = '';
+                        for (const referralId in userData.referrals) {
+                            const referral = userData.referrals[referralId];
+                            const referralItem = document.createElement('div');
+                            referralItem.className = 'referral-item';
+                            referralItem.innerHTML = `
+                                <span>${referral.email}</span>
+                                <span>${new Date(referral.joinedAt).toLocaleDateString()}</span>
+                            `;
+                            referralList.appendChild(referralItem);
+                        }
+                    } else {
+                        totalReferrals.textContent = '0';
+                        referralRank.textContent = '#1';
+                        referralList.innerHTML = '<div class="referral-item">No referrals yet</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Copy referral link to clipboard
+        function copyReferralLink() {
+            const referralLink = referralLinkText.textContent;
+            navigator.clipboard.writeText(referralLink)
+                .then(() => {
+                    alert('Referral link copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = referralLink;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Referral link copied to clipboard!');
+                });
+        }
+
+        // Share referral link using Web Share API
+        function shareReferralLink() {
+            const referralLink = referralLinkText.textContent;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join using my referral link!',
+                    text: 'Sign up using my referral link and get started!',
+                    url: referralLink,
+                })
+                .then(() => console.log('Successful share'))
+                .catch((error) => console.log('Error sharing:', error));
+            } else {
+                // Fallback: copy to clipboard
+                copyReferralLink();
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            signupError.textContent = message;
+            signupError.classList.remove('hidden');
+            
+            // Hide error after 5 seconds
+            setTimeout(() => {
+                signupError.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Show login form (simplified for demo)
+        function showLoginForm() {
+            alert('In a real application, this would show a login form. For this demo, please use the signup form.');
+        }
+
+        // Simulate Firebase connection status
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Firebase config is set
+            if (firebaseConfig.apiKey === "your-api-key") {
+                showError('Please configure Firebase with your project settings in the script tag.');
+            }
+        });
+    </script>
+</body>
+</html>
