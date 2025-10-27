@@ -147,9 +147,8 @@ color:var(--color2);">4. 🚫 Multiple submissions from one user are not allowed
         <h1>Application </h1>
         <div class="hintImgHolder">
           <img id="appImg" src="./images/LightImg1.jpg" alt="" />
-          <button id="nextImg" class="nextBtn" type="submit">></button>
-          <button id="prevImg" class="prevBtn" type="submit">
-            <</button>
+          <button id="nextImg" class="nextBtn" type="submit"><i class="fa-solid fa-forward"></i></button>
+          <button id="prevImg" class="prevBtn" type="submit"><i class="fa-solid fa-backward"></i> </button>
 
 
         </div>
@@ -167,7 +166,7 @@ color:var(--color2);">4. 🚫 Multiple submissions from one user are not allowed
 
           You can enable or disable access to this information at any time, through Your Device settings.
         </p>
-        <a class="downloadApkBtn"  >Download Apk</a>
+        <a class="downloadApkBtn">Download Apk</a>
 
       </div>
 
@@ -202,39 +201,44 @@ color:var(--color2);">4. 🚫 Multiple submissions from one user are not allowed
   </div>
   <div id="financeSectionPage">
     <div id="financePage">
-      <button class="closeFinancePageBtn" type="submit"><i class="fa-solid fa-xmark" ></i></button>
+      <button class="closeFinancePageBtn" type="submit"><i class="fa-solid fa-xmark"></i></button>
       <div id="swapGint">
-        <p class="displaySwapEligility"style="color:blue; padding: 10px; margin-top: 40px ; display: none; display:none;">
-  <strong>Prerequisites for GINT Swapping:</strong><br />
-  📌 A maximum of <strong>five (5) referred users</strong> are permitted.<br />
-  📌 A minimum wallet balance of <strong>1,000 GINT</strong> is required.
-</p>
+        <p class="displaySwapEligility" style="color:blue; padding: 10px; margin-top: 40px ; display: none; display:none;">
+          <strong>Prerequisites for GINT Swapping:</strong><br />
+          📌 A maximum of <strong>five (5) referred users</strong> are permitted.<br />
+          📌 A minimum wallet balance of <strong>1,000 GINT</strong> is required.
+        </p>
         <div class="displaySwapInput" style="display: none;">
-          <input id="amountOfGintToSwap" type="number" class="loginInput"  placeholder="Enter Gints amount" style="margin-top :100px;">
-        <button id="swapGintToNgnBtn" class="loginBtn" type="submit">Swap</button>
-      </div> 
+          <input id="amountOfGintToSwap" type="number" class="loginInput" placeholder="Enter Gints amount" style="margin-top :100px;">
+          <button id="swapGintToNgnBtn" class="loginBtn" type="submit">Swap</button>
         </div>
+      </div>
       <div id="widthrawal">
-          <p class="displayWidthrawEligility"style="color:blue; padding: 10px; margin-top: 40px ; display: none; display:none;">
-  <strong>Prerequisites for NGN widthrawal:</strong></br>
-     📌Minimum Balance Requirement: A maintained account balance exceeding ₦1,000 is required to process withdrawal transactions.
-</p>
-<div class="displayWidthrawInput" style="display: none;">
-  <input id="amountOfNgnToWidthraw" type="number" class="loginInput" placeholder="Enter amount" style="margin-top :100px;">
-  <input id="bankAccountNumber" type="number" class="loginInput" placeholder="Enter Account Number" style="margin-top :20px;">
-  <input id="bankAccountName" type="text" class="loginInput" placeholder="Enter Account Name" style="margin-top :20px;">
-    <input id="bankName" type="text" class="loginInput" placeholder="Enter Your Bank name" style="margin-top :20px;">
-  <button id="widthrawNgn" class="loginBtn" type="submit">Widthraw</button>
-</div>
-        
+        <p class="displayWidthrawEligility" style="color:blue; padding: 10px; margin-top: 40px ; display: none; display:none;">
+          <strong>Prerequisites for NGN widthrawal:</strong></br>
+          📌Minimum Balance Requirement: A maintained account balance exceeding ₦1,000 is required to process withdrawal transactions.
+        </p>
+        <div class="displayWidthrawInput" style="display: none;">
+          <input id="amountOfNgnToWidthraw" type="number" class="loginInput" placeholder="Enter amount" style="margin-top :100px;">
+          <input id="bankAccountNumber" type="number" class="loginInput" placeholder="Enter Account Number" style="margin-top :20px;">
+          <input id="bankAccountName" type="text" class="loginInput" placeholder="Enter Account Name" style="margin-top :20px;">
+          <input id="bankName" type="text" class="loginInput" placeholder="Enter Your Bank name" style="margin-top :20px;">
+          <button id="widthrawNgn" class="loginBtn" type="submit">Widthraw</button>
+        </div>
+
       </div>
       <div id="tranferGint">
-        
+        <div id="displayTransferInput" style="display: none">
+          <input id="gintToTranfer" type="number" class="loginInput" placeholder="Enter Amount" style="margin-top :100px;">
+          <input id="receiverId" type="text" class="loginInput" placeholder="Enter receiver UserId " style="margin-top :20px;">
+          <button id="tranferGintBtn" class="loginBtn" type="submit">Transfer Gint </button>
+        </div>
+
       </div>
 
 
     </div>
-    
+
   </div>
 
   <script type="module" src="websheets/hintall.js"></script>

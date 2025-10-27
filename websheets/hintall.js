@@ -55,15 +55,17 @@ var taskBtn = document.querySelectorAll('.taskBtn')
 var startMiningGint = document.getElementById('startMining')
 var closeFinancePageBtn = document.querySelector('.closeFinancePageBtn')
 var financePage = document.getElementById('financePage')
-var profileBtn =document.querySelectorAll('.transBtn')
+var profileBtn = document.querySelectorAll('.transBtn')
 var swapGintToNgnBtn = document.getElementById('swapGintToNgnBtn')
 var widthrawNgnBtn = document.getElementById('widthrawNgn')
-
+var tranferGintBtn = document.getElementById('tranferGintBtn')
+var userIdSlice = ''
 //on window load check if user is signed in
 window.onload = function() {
   var userTheme = localStorage.getItem('userTheme')
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      userIdSlice = user.uid.slice(18)
       getAllUserCredential(user)
       displayBd.style.display = 'block'
       logPage.style.display = 'none'
@@ -120,16 +122,17 @@ nextAppImgBtn.addEventListener("click", displayNextImages)
 prevAppImgBtn.addEventListener("click", displayPrevImages)
 closeFinancePageBtn.addEventListener("click", closeFinancePage)
 swapGintToNgnBtn.addEventListener('click', swapGintToNgn)
-document.querySelector('.downloadApkBtn').addEventListener('click', ()=>{
+document.querySelector('.downloadApkBtn').addEventListener('click', () => {
 
   if (isMining == true) {
     alert('Mining in progress wait till mining session is over')
   } else {
     alert('Please hold while you are being redirected ApkPure')
-    window.location.href ='https://apkpure.net/hintall/maxon.emmanuel.hintall/download'
+    window.location.href = 'https://apkpure.net/hintall/maxon.emmanuel.hintall/download'
   }
 })
 widthrawNgnBtn.addEventListener('click', sendUserDetailsForTransaction)
+tranferGintBtn.addEventListener('click', tranferGintToUser)
 
 //for each
 links.forEach(smoothScroll)
@@ -141,37 +144,38 @@ taskBtn.forEach((eachBtn, index) => {
       alert('Mining in progress wait till mining session is over')
     } else {
       if (eachBtn.textContent == 'Gint Claimed') {
-  alert('Thank you for your participation. A new task will soon be available')
-} else {
-  addTaskGintsToBalance(index)
-}
+        alert('Thank you for your participation. A new task will soon be available')
+      } else {
+        addTaskGintsToBalance(index)
+      }
     }
-  }, {once : true})
+  }, { once: true })
 
 })
-profileBtn.forEach((profileBtn,index) =>{
-  profileBtn.addEventListener("click",()=>{
-    
+profileBtn.forEach((profileBtn, index) => {
+  profileBtn.addEventListener("click", () => {
+
     if (isMining == true) {
       alert('Mining in progress wait till mining session is over')
     } else {
       if (profileBtn.textContent == 'Widthrawal') {
         closeFinancePage()
-  openWidthdrawalPage()
-  
-} else if (profileBtn.textContent == 'SwapGint') {
-  closeFinancePage()
-  openSwapGintPage()
-} else if (profileBtn.textContent == 'TransferGint') {
-  console.log('TransferGint')
+        openWidthdrawalPage()
 
-} else if (profileBtn.textContent == 'Mining') {
-  closeFinancePage()
-  openMiningPage()
-}
+      } else if (profileBtn.textContent == 'SwapGint') {
+        closeFinancePage()
+        openSwapGintPage()
+      } else if (profileBtn.textContent == 'TransferGint') {
+        closeFinancePage()
+        openTransferGintPage()
+
+      } else if (profileBtn.textContent == 'Mining') {
+        closeFinancePage()
+        openMiningPage()
+      }
     }
   })
-  
+
 })
 
 //functions
@@ -312,7 +316,9 @@ function signUserToFirebase() {
   } else {
     alert("Uploading your details please wait a moment")
     createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) => {
-      set(ref(db, "Web Users/" + userCredential.user.uid), {
+      var userIdValue = userCredential.user.uid.slice(18)
+
+      set(ref(db, "Web Users/" + userIdValue), {
         fullName: fullName.value,
         userName: userName.value,
         emailAcc: email.value,
@@ -320,8 +326,9 @@ function signUserToFirebase() {
         accountBalance: 0,
         userLevel: 'Novice',
         gintBalance: 0,
-        referralNumber : 0,
-        
+        referralNumber: 0,
+        userId: userIdValue
+
 
       }).then(() => {
 
@@ -404,7 +411,7 @@ function setLightMood() {
 }
 
 function getAllUserCredential(user) {
-  const userData = child(dbRef, 'Web Users/' + user.uid)
+  const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
   get(userData)
     .then((snapshot) => {
       if (snapshot.exists()) {
@@ -450,11 +457,11 @@ function addTaskGintsToBalance(param) {
   }
 }
 
-function proceedToTaskPage(taskNum,  alertMessage, taskHerf, gintReward) {
+function proceedToTaskPage(taskNum, alertMessage, taskHerf, gintReward) {
   alert(alertMessage)
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      const userId = user.uid
+      const userId = user.uid.slice(18)
       const taskRef = ref(db, `Web Users/${userId}/` + 'Task List/')
       const gintBalanceRef = ref(db, `Web Users/${userId}`)
       if (taskNum == 'taskOne') {
@@ -509,7 +516,7 @@ function proceedToTaskPage(taskNum,  alertMessage, taskHerf, gintReward) {
 }
 
 function checkUserTaskList(user) {
-  const taskData = child(dbRef, 'Web Users/' + `${user.uid}/` + 'Task List')
+  const taskData = child(dbRef, 'Web Users/' + `${user.uid.slice(18)}/` + 'Task List')
   get(taskData).then((snapshot) => {
     if (snapshot.exists()) {
       var taskBoolean = snapshot.val()
@@ -532,154 +539,222 @@ function checkUserTaskList(user) {
   })
 
 }
+
 function closeFinancePage() {
   financePage.style.display = 'none'
   document.querySelector('.displaySwapInput').style.display = 'none'
   document.querySelector('.displaySwapEligility').style.display = 'none'
   document.querySelector('.displayWidthrawEligility').style.display = 'none'
-            document.querySelector('.displayWidthrawInput').style.display ='none'
+  document.querySelector('.displayWidthrawInput').style.display = 'none'
+  document.getElementById('displayTransferInput').style.display = 'none'
 }
+
 function openSwapGintPage() {
   financePage.style.display = 'block'
-  onAuthStateChanged(auth, (user)=>{
+  onAuthStateChanged(auth, (user) => {
     if (user) {
-      const userData = child(dbRef, 'Web Users/' + user.uid)
-      get(userData).then((snapshot) =>{
-        if(snapshot.exists()){
+      const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+      get(userData).then((snapshot) => {
+        if (snapshot.exists()) {
           var data = snapshot.val()
-var referralNumber = data.referralNumber
-var gintBalance = data.gintBalance
+          var referralNumber = data.referralNumber
+          var gintBalance = data.gintBalance
 
-if (referralNumber >= 5 && gintBalance >= 1000) {
-  // Both criteria are met - show swap input
-  document.querySelector('.displaySwapEligility').style.display = 'none'
-  document.querySelector('.displaySwapInput').style.display = 'block'
-} else {
-  // One or both criteria not met - show eligibility message
-  document.querySelector('.displaySwapEligility').style.display = 'block'
-  document.querySelector('.displaySwapInput').style.display = 'none'
-}
+          if (referralNumber >= 5 && gintBalance >= 1000) {
+            // Both criteria are met - show swap input
+            document.querySelector('.displaySwapEligility').style.display = 'none'
+            document.querySelector('.displaySwapInput').style.display = 'block'
+          } else {
+            // One or both criteria not met - show eligibility message
+            document.querySelector('.displaySwapEligility').style.display = 'block'
+            document.querySelector('.displaySwapInput').style.display = 'none'
+          }
         }
       })
     }
   })
 }
-function swapGintToNgn(){
+
+function swapGintToNgn() {
   var amount = document.getElementById('amountOfGintToSwap').value
-  onAuthStateChanged(auth, (user)=>{
+  onAuthStateChanged(auth, (user) => {
     if (user) {
-      const userData = child(dbRef, 'Web Users/' + user.uid)
-      const storeSwapGint = child(dbRef, 'Web Users/' + '1cW6lPyTVOe91KeTWtT4cVJxMQ43') 
-      get(userData).then((snapshot)=>{
+      const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+      const storeSwapGint = child(dbRef, 'Web Users/' + 'CadhhPDMQ2')
+      get(userData).then((snapshot) => {
         if (snapshot.exists()) {
           var data = snapshot.val()
           var gintBalance = data.gintBalance
           var ngnBalace = data.accountBalance
-          if (amount> gintBalance ) {
+          if (amount > gintBalance) {
             alert('Insufficient Gints')
-          } else if (amount ==0) {
+          } else if (amount == 0) {
             alert('Enter The amount of Gints to Swap')
           } else {
             var newGintBalance = gintBalance - amount
-var newNgnBalance = Math.round(amount / 83 * 250)
-alert('Transaction In progress')
-update(storeSwapGint, {
-  gintBalance : increment(Number(amount))
-})
+            var newNgnBalance = Math.round(amount / 83 * 250)
+            alert('Transaction In progress')
+            update(storeSwapGint, {
+              gintBalance: increment(Number(amount))
+            })
             update(userData, {
-              gintBalance : newGintBalance, 
-              accountBalance : increment(newNgnBalance)
-            }).then(()=>{
+              gintBalance: newGintBalance,
+              accountBalance: increment(newNgnBalance)
+            }).then(() => {
               alert('Transaction complete')
               getAllUserCredential(user)
               closeFinancePage()
             })
-            
+
           }
-          
+
         }
       })
     }
   })
 }
-function openWidthdrawalPage(){
+
+function openWidthdrawalPage() {
   financePage.style.display = 'block'
-  onAuthStateChanged(auth, (user)=>{
+  onAuthStateChanged(auth, (user) => {
     if (user) {
-      const userData = child(dbRef, 'Web Users/' + user.uid)
-      get(userData).then((snapshot)=>{
+      const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+      get(userData).then((snapshot) => {
         if (snapshot.exists()) {
           var data = snapshot.val()
-          if(data.accountBalance <= 1000){
+          if (data.accountBalance <= 1000) {
             document.querySelector('.displayWidthrawEligility').style.display = 'block'
-            
+
           } else {
-            document.querySelector('.displayWidthrawInput').style.display ='block'
+            document.querySelector('.displayWidthrawInput').style.display = 'block'
           }
         }
       })
     }
   })
 }
+
 function sendUserDetailsForTransaction() {
   // Your pre-filled message
   var ngnAmount = document.getElementById('amountOfNgnToWidthraw').value
   var accounName = document.getElementById('bankAccountName').value
   var accountNumber = document.getElementById('bankAccountNumber').value
-  var bankName = document.getElementById ('bankName').value
-    if (accounName == '' || accountNumber == 0 || ngnAmount == 0 || bankName == ''){
-      alert('Please Fill all required inputs')
-    } else {
-      onAuthStateChanged(auth, (user)=>{
-        if (user) {
-          const userData = child(dbRef, 'Web Users/' + user.uid)
-          const pendingWidthdraw = child(dbRef, 'Pending Widthrawal/' + user.uid)
-          get(pendingWidthdraw).then((snapshot)=>{
-            if (snapshot.exists()) {
-              var pendingData = snapshot.val()
-              if (pendingData.stillPending == true) {
-                alert('📝 A withdrawal is already in progress. For the security of your account, please wait for it to finalize before initiating a new one. Thank you for your patience! 🙂')
-                closeFinancePage()
-              } 
-              else {
-                get(userData).then((snapshot) => {
-  if (snapshot.exists()) {
-    var data = snapshot.val()
-    if (ngnAmount < 1000) {
-      alert('Widthrawal threshold should be above 1000Ngn')
-    } else if (data.accountBalance < ngnAmount) {
-      alert('Insufficient Funds')
-    } else {
-      addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName)
-    }
-  }
-})
-              }
+  var bankName = document.getElementById('bankName').value
+  if (accounName == '' || accountNumber == 0 || ngnAmount == 0 || bankName == '') {
+    alert('Please Fill all required inputs')
+  } else {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+        const pendingWidthdraw = child(dbRef, 'Pending Widthrawal/' + user.uid.slice(18))
+        get(pendingWidthdraw).then((snapshot) => {
+          if (snapshot.exists()) {
+            var pendingData = snapshot.val()
+            if (pendingData.stillPending == true) {
+              alert('📝 A withdrawal is already in progress. For the security of your account, please wait for it to finalize before initiating a new one. Thank you for your patience! 🙂')
+              closeFinancePage()
             }
-          })
-          
-        }
-      })
-    }
+            else {
+              get(userData).then((snapshot) => {
+                if (snapshot.exists()) {
+                  var data = snapshot.val()
+                  if (ngnAmount < 1000) {
+                    alert('Widthrawal threshold should be above 1000Ngn')
+                  } else if (data.accountBalance < ngnAmount) {
+                    alert('Insufficient Funds')
+                  } else {
+                    addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName)
+                  }
+                }
+              })
+            }
+          }
+        })
+
+      }
+    })
+  }
 }
-function addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName){
+
+function addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName) {
   alert('Transaction In progress')
-  const userData = child(dbRef, 'Web Users/' + user.uid) 
-  set(ref(db, "Pending Widthrawal/" + user.uid), {
-        bankAccountName: accounName,
-        bankAccountNumber : accountNumber,
-        userBankName: bankName,
-        amoutToWidthdraw: ngnAmount, 
-        stillPending : true
-      }).then(()=>{
-        update(userData, {
-          accountBalance : increment(-ngnAmount)
-        }).then(()=>{
-          alert('Transaction Complete ')
+  const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+  set(ref(db, "Pending Widthrawal/" + user.uid.slice(18)), {
+    bankAccountName: accounName,
+    bankAccountNumber: accountNumber,
+    userBankName: bankName,
+    amoutToWidthdraw: ngnAmount,
+    stillPending: true
+  }).then(() => {
+    update(userData, {
+      accountBalance: increment(-ngnAmount)
+    }).then(() => {
+      alert('Transaction Complete ')
+      getAllUserCredential(user)
+      closeFinancePage()
+    })
+  })
+}
+
+function openTransferGintPage() {
+  financePage.style.display = 'block'
+  document.getElementById('displayTransferInput').style.display = 'block'
+  /* onAuthStateChanged(auth, (user)=>{
+     if (user) {
+       var userId = user.uid
+       console.log(userId.slice(18))
+     }
+   })*/
+}
+
+function tranferGintToUser() {
+  var amountToTransfer = document.getElementById('gintToTranfer').value
+  var receiverId = document.getElementById('receiverId').value
+  if (amountToTransfer == 0 || receiverId == '') {
+    alert('Please fill required inputs')
+
+  } else {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userData = child(dbRef, 'Web Users/' + user.uid.slice(18))
+        get(userData).then((snapshot) => {
+          if (snapshot.exists()) {
+            var data = snapshot.val()
+            if (amountToTransfer > data.gintBalance) {
+              alert('Insufficient Gints ')
+            } else {
+              tranferGint(user, amountToTransfer, receiverId)
+            }
+          }
+        })
+      }
+    })
+  }
+}
+
+function tranferGint(user, amountToTransfer, receiverId) {
+  const receiverIdRef = child(dbRef, 'Web Users/' + receiverId)
+  var senderUserIdRef = child(dbRef, 'Web Users/' + userIdSlice)
+  get(receiverIdRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      alert('Transaction In progress')
+      update(senderUserIdRef, {
+        gintBalance: increment(Number(-amountToTransfer))
+      }).then(() => {
+        update(receiverIdRef, {
+          gintBalance: increment(Number(amountToTransfer))
+        }).then(() => {
           getAllUserCredential(user)
           closeFinancePage()
+          alert('Transaction Complete')
         })
       })
+
+
+    } else {
+      alert('Invalid Receiver UserId')
+    }
+  })
 }
 
 // Mining separate functionTimer
@@ -692,7 +767,7 @@ let minedGints = 0;
 
 // Request notification permission
 function requestNotificationPermission() {
-  isMining =false
+  isMining = false
   if ("Notification" in window) {
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
@@ -792,7 +867,7 @@ async function addGintsToBalance() {
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        const userId = user.uid;
+        const userId = user.uid.slice(18);
         const gintBalanceRef = ref(db, `Web Users/${userId}`);
 
         update(gintBalanceRef, {
@@ -826,7 +901,7 @@ async function addGintsToBalance() {
 }
 // Reset the timer
 function resetTimer() {
-  isMining = false 
+  isMining = false
   clearInterval(countdown);
   remainingSeconds = totalSeconds;
   minedGints = 0;
