@@ -797,6 +797,35 @@ let countdown;
 const totalSeconds = 6 * 60 * 60; // 6 hours
 let remainingSeconds = totalSeconds;
 let minedGints = 0;
+// === ADD WEB WORKER FUNCTION HERE ===
+function createMiningWorker() {
+  const workerCode = `
+    let countdown;
+    let remainingSeconds = ${totalSeconds};
+    
+    self.onmessage = function(e) {
+      if (e.data === 'start') {
+        countdown = setInterval(() => {
+          remainingSeconds--;
+          self.postMessage(remainingSeconds);
+          
+          if (remainingSeconds <= 0) {
+            clearInterval(countdown);
+            self.postMessage('completed');
+          }
+        }, 1000);
+      }
+      else if (e.data === 'stop') {
+        clearInterval(countdown);
+      }
+    };
+  `;
+  
+  const blob = new Blob([workerCode], { type: 'application/javascript' });
+  return new Worker(URL.createObjectURL(blob));
+}
+
+let miningWorker;
 
 
 
@@ -862,33 +891,31 @@ function formatTime(seconds) {
 }
 
 // Start the countdown
+// Start the countdown
 function startTimer() {
-  isMining = true
+  isMining = true;
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
   startBtn.disabled = true;
   startBtn.textContent = "Mining in Progress...";
 
-  countdown = setInterval(() => {
-    remainingSeconds--;
-
-    // Update display
-    timerDisplay.textContent = formatTime(remainingSeconds);
-
-    // Check if timer has finished
-    if (remainingSeconds <= 0) {
-      clearInterval(countdown);
-      minedGints = 83; // Set mined Gints to 83
+  // Create web worker
+  miningWorker = createMiningWorker();
+  
+  miningWorker.onmessage = function(e) {
+    if (e.data === 'completed') {
+      minedGints = 83;
       timerDisplay.textContent = `${minedGints} Gints Mined!`;
       startBtn.disabled = false;
       startBtn.textContent = "Add Gints to Balance";
-
-      // Show notification that mining is complete
-      showNotification("Mining Complete! 🎉", "You've mined 83 Gints! Click to add them to your balance.");
-      showTabNotification("Mining Complete - 83 Gints Mined!");
+      showNotification("Mining Complete! 🎉", "You've mined 83 Gints!");
+    } else {
+      timerDisplay.textContent = formatTime(e.data);
     }
-  }, 1000);
+  };
+
+  miningWorker.postMessage('start');
 }
 
 // Add mined Gints to user balance in Firebase Realtime Database
@@ -935,12 +962,15 @@ async function addGintsToBalance() {
   }
 }
 // Reset the timer
+// Reset the timer
 function resetTimer() {
-  isMining = false
-  clearInterval(countdown);
+  isMining = false;
+  if (miningWorker) {
+    miningWorker.postMessage('stop');
+    miningWorker.terminate();
+  }
+  
   remainingSeconds = totalSeconds;
-  minedGints = 0;
-
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
