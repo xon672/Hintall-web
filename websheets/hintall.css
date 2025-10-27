@@ -164,15 +164,15 @@ main {
   position: absolute;
   top: 50%;
   left: 5%;
-  font-size :25px ;
-  padding-top :5px;
+  font-size: 25px;
+  padding-top: 5px;
 }
 
 .nextBtn {
   position: absolute;
   top: 50%;
   right: 5%;
-  font-size :25px ;
+  font-size: 25px;
   padding-top: 5px;
 }
 
