@@ -72,6 +72,10 @@ window.onload = function() {
       displayBd.style.display = 'block'
       logPage.style.display = 'none'
       checkUserTaskList(user)
+
+      // INITIALIZE MINING - ADD THIS LINE
+      initMining();
+
       if (userTheme == 'DarkMood') {
         setDarkMoodOnLoad()
       } else if (userTheme == 'LightMood') {
@@ -79,26 +83,18 @@ window.onload = function() {
       } else {
         changebodyBg(false)
       }
-
     } else {
       displayBd.style.display = 'none'
       logPage.style.display = 'block'
     }
-  })
+  });
+
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
-  // Request notification permission when page loads
   requestNotificationPermission();
-
-  // Set initial display
   timerDisplay.textContent = formatTime(remainingSeconds);
-
-  // Add click event listener to button
   startBtn.addEventListener('click', handleStartClick);
-
-
-
 }
 
 
@@ -793,11 +789,16 @@ function tranferGint(user, amountToTransfer, receiverId) {
 }
 
 // Mining separate functionTimer
+// Mining variables
 let countdown;
 const totalSeconds = 6 * 60 * 60; // 6 hours
 let remainingSeconds = totalSeconds;
 let minedGints = 0;
-// === ADD WEB WORKER FUNCTION HERE ===
+let miningStartTime = null;
+const miningDuration = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+let miningWorker;
+
+// Web Worker function
 function createMiningWorker() {
   const workerCode = `
     let countdown;
@@ -825,13 +826,9 @@ function createMiningWorker() {
   return new Worker(URL.createObjectURL(blob));
 }
 
-let miningWorker;
-
-
-
 // Request notification permission
 function requestNotificationPermission() {
-  isMining = false
+  isMining = false;
   if ("Notification" in window) {
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
@@ -846,17 +843,15 @@ function showNotification(title, message) {
   if ("Notification" in window && Notification.permission === "granted") {
     const notification = new Notification(title, {
       body: message,
-      icon: "/icon.png", // Add your app icon path
-      badge: "/badge.png", // Add your badge icon path
+      icon: "/icon.png",
+      badge: "/badge.png",
       tag: "mining-notification"
     });
 
-    // Close notification after 5 seconds
     setTimeout(() => {
       notification.close();
     }, 5000);
 
-    // Focus window when notification is clicked
     notification.onclick = () => {
       window.focus();
       notification.close();
@@ -864,12 +859,11 @@ function showNotification(title, message) {
   }
 }
 
-// Show browser tab notification (falls back to this if push notifications are blocked)
+// Show browser tab notification
 function showTabNotification(message) {
   if (document.hidden) {
     document.title = "⏰ " + message;
 
-    // Restore original title when user comes back to tab
     const originalTitle = document.title;
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -886,30 +880,128 @@ function formatTime(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Start the countdown
+// Check for completed mining sessions
+function checkCompletedMining() {
+  const savedStartTime = localStorage.getItem('miningStartTime');
+  
+  if (savedStartTime) {
+    const miningStartTime = parseInt(savedStartTime);
+    const elapsed = Date.now() - miningStartTime;
+    
+    // If mining completed while browser was closed
+    if (elapsed >= miningDuration) {
+      minedGints = 83;
+      
+      // Send completion notification
+      showNotification("⛏️ Mining Complete!", "You've mined 83 Gints! Open the app to claim your reward.");
+      
+      // Also show tab notification for better visibility
+      showTabNotification("Mining Complete! Claim 83 Gints");
+      
+      // Update UI if user is on the page
+      const timerDisplay = document.querySelector('.countTime');
+      const startBtn = document.getElementById('startMining');
+      
+      if (timerDisplay && startBtn) {
+        timerDisplay.textContent = `${minedGints} Gints Mined!`;
+        startBtn.disabled = false;
+        startBtn.textContent = "Add Gints to Balance";
+      }
+    }
+  }
+}
+
+// Handle mining completion
+function handleMiningCompletion() {
+  minedGints = 83;
+  const timerDisplay = document.querySelector('.countTime');
+  const startBtn = document.getElementById('startMining');
+
+  timerDisplay.textContent = `${minedGints} Gints Mined!`;
+  startBtn.disabled = false;
+  startBtn.textContent = "Add Gints to Balance";
+  
+  // Send notification
+  showNotification("⛏️ Mining Complete!", "You've mined 83 Gints! Click to claim your reward.");
+  showTabNotification("Mining Complete! Claim 83 Gints");
+  
+  // Clear the saved start time
+  localStorage.removeItem('miningStartTime');
+}
+
+// Check mining status on page load
+function checkMiningStatus() {
+  const savedStartTime = localStorage.getItem('miningStartTime');
+  
+  if (savedStartTime) {
+    miningStartTime = parseInt(savedStartTime);
+    const elapsed = Date.now() - miningStartTime;
+    
+    if (elapsed < miningDuration) {
+      // Mining still in progress - resume
+      const remainingMs = miningDuration - elapsed;
+      remainingSeconds = Math.floor(remainingMs / 1000);
+      
+      isMining = true;
+      const timerDisplay = document.querySelector('.countTime');
+      const startBtn = document.getElementById('startMining');
+      
+      startBtn.disabled = true;
+      startBtn.textContent = "Mining in Progress...";
+      
+      // Start visual countdown with remaining time
+      miningWorker = createMiningWorker();
+      miningWorker.onmessage = function(e) {
+        if (e.data === 'completed') {
+          handleMiningCompletion();
+        } else {
+          timerDisplay.textContent = formatTime(e.data);
+        }
+      };
+      miningWorker.postMessage('start');
+      
+    } else {
+      // Mining completed while browser was closed
+      handleMiningCompletion();
+    }
+  }
+}
+
+// Initialize mining
+function initMining() {
+  // Check for any completed mining sessions first
+  checkCompletedMining();
+  
+  // Then check current mining status
+  checkMiningStatus();
+  
+  // Set up periodic checks for completion (every minute)
+  setInterval(checkCompletedMining, 60000);
+}
+
 // Start the countdown
 function startTimer() {
+  miningStartTime = Date.now();
   isMining = true;
+  
+  // Save to localStorage
+  localStorage.setItem('miningStartTime', miningStartTime.toString());
+  
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
   startBtn.disabled = true;
   startBtn.textContent = "Mining in Progress...";
 
-  // Create web worker
+  // Start visual countdown
   miningWorker = createMiningWorker();
   
   miningWorker.onmessage = function(e) {
     if (e.data === 'completed') {
-      minedGints = 83;
-      timerDisplay.textContent = `${minedGints} Gints Mined!`;
-      startBtn.disabled = false;
-      startBtn.textContent = "Add Gints to Balance";
-      showNotification("Mining Complete! 🎉", "You've mined 83 Gints!");
+      handleMiningCompletion();
     } else {
       timerDisplay.textContent = formatTime(e.data);
     }
@@ -918,7 +1010,7 @@ function startTimer() {
   miningWorker.postMessage('start');
 }
 
-// Add mined Gints to user balance in Firebase Realtime Database
+// Add mined Gints to user balance
 async function addGintsToBalance() {
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
@@ -935,11 +1027,9 @@ async function addGintsToBalance() {
         update(gintBalanceRef, {
           gintBalance: increment(minedGints)
         }).then(() => {
-          // Notify user Gints have been added to database
           timerDisplay.textContent = "Success! +83 Gints";
-          showNotification("Gints Added! 💰", "83 Gints have been added to your balance!");
+          showNotification("💰 Gints Added!", "83 Gints have been added to your balance!");
 
-          // Restore the timer
           setTimeout(() => {
             resetTimer();
           }, 2000);
@@ -953,7 +1043,6 @@ async function addGintsToBalance() {
         throw new Error("User not authenticated");
       }
     });
-
   } catch (error) {
     console.error("Error in addGintsToBalance:", error);
     timerDisplay.textContent = "Authentication error";
@@ -961,7 +1050,7 @@ async function addGintsToBalance() {
     startBtn.textContent = "Try Again";
   }
 }
-// Reset the timer
+
 // Reset the timer
 function resetTimer() {
   isMining = false;
@@ -971,12 +1060,18 @@ function resetTimer() {
   }
   
   remainingSeconds = totalSeconds;
+  minedGints = 0;
+  miningStartTime = null;
+  
   const timerDisplay = document.querySelector('.countTime');
   const startBtn = document.getElementById('startMining');
 
   timerDisplay.textContent = formatTime(remainingSeconds);
   startBtn.textContent = "Start Mining Gint";
   startBtn.disabled = false;
+  
+  // Clear saved state
+  localStorage.removeItem('miningStartTime');
 }
 
 // Button click event handler
@@ -991,6 +1086,8 @@ function handleStartClick() {
     addGintsToBalance();
   }
 }
+
+
 
 //adding referral seperate function
 // Enhanced shareReferralLink function with multiple platforms
@@ -1348,6 +1445,35 @@ async function processReferral(newUserId, referrerId) {
     } catch (error) {
         console.error('Error processing referral:', error);
     }
+}
+function saveTimerState(seconds, isRunning, minedGints) {
+    const timerState = {
+        remainingSeconds: seconds,
+        isMining: isRunning,
+        minedGints: minedGints,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('miningTimerState', JSON.stringify(timerState));
+}
+
+// Load timer state from localStorage
+function loadTimerState() {
+    const saved = localStorage.getItem('miningTimerState');
+    if (saved) {
+        const timerState = JSON.parse(saved);
+        
+        // Check if saved state is older than 6 hours (expired)
+        const timeElapsed = Date.now() - timerState.timestamp;
+        const sixHoursInMs = 6 * 60 * 60 * 1000;
+        
+        if (timeElapsed < sixHoursInMs) {
+            return timerState;
+        } else {
+            // Timer expired, clear saved state
+            localStorage.removeItem('miningTimerState');
+        }
+    }
+    return null;
 }
 
 
