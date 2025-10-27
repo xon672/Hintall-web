@@ -60,9 +60,11 @@ var swapGintToNgnBtn = document.getElementById('swapGintToNgnBtn')
 var widthrawNgnBtn = document.getElementById('widthrawNgn')
 var tranferGintBtn = document.getElementById('tranferGintBtn')
 var userIdSlice = ''
+
 //on window load check if user is signed in
 window.onload = function() {
   var userTheme = localStorage.getItem('userTheme')
+  autoFillReferralFromURL();
   onAuthStateChanged(auth, (user) => {
     if (user) {
       userIdSlice = user.uid.slice(18)
@@ -98,6 +100,7 @@ window.onload = function() {
 
 
 }
+
 
 //Boolean variables 
 var onDarkMood = false
@@ -311,6 +314,8 @@ function signUserToFirebase() {
   var userName = document.getElementById('Username')
   var email = document.getElementById('email')
   var password = document.getElementById('password')
+  var referralUserId = document.getElementById('referralUserId').value
+
   if (fullName.value === '', userName.value === '', email.value === '', password.value === '') {
     alert('All input should be filled to proceed')
   } else {
@@ -318,31 +323,45 @@ function signUserToFirebase() {
     createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential) => {
       var userIdValue = userCredential.user.uid.slice(18)
 
+      // Generate referral code for new user
+      const userReferralCode = generateReferralCode();
+
       set(ref(db, "Web Users/" + userIdValue), {
         fullName: fullName.value,
         userName: userName.value,
         emailAcc: email.value,
         passWord: password.value,
         accountBalance: 0,
-        userLevel: 'Novice',
+        userLevel: 'Novice', // Set initial level as Novice
         gintBalance: 0,
         referralNumber: 0,
-        userId: userIdValue
-
-
-      }).then(() => {
+        userId: userIdValue,
+        referralCode: userReferralCode,
+        joinedAt: new Date().toISOString()
+      }).then(async () => {
+        // Process referral if provided
+        if (referralUserId && referralUserId.trim() !== '') {
+          await processReferral(userIdValue, referralUserId);
+        } else {
+          // Check localStorage for referral code
+          const storedReferral = localStorage.getItem('referralCode');
+          if (storedReferral) {
+            await processReferral(userIdValue, storedReferral);
+            localStorage.removeItem('referralCode');
+          }
+        }
 
         signPage.style.display = 'none'
-        alert('Sign up successfull')
+        alert('Sign up successful! 🎉')
         displayBd.style.display = 'block'
         getAllUserCredential(userCredential.user)
-      }).catch(() => {
-        alert('not successfull')
+      }).catch((error) => {
+        alert('Sign up failed: ' + error.message)
       })
+    }).catch((error) => {
+      alert('Sign up failed: ' + error.message)
     })
-
   }
-
 }
 
 function loginUserToFirebase() {
@@ -415,14 +434,30 @@ function getAllUserCredential(user) {
   get(userData)
     .then((snapshot) => {
       if (snapshot.exists()) {
-        var data = snapshot.val()
-        document.querySelector('.accountBalance').textContent = data.accountBalance
-        document.querySelector('.gintBalance').textContent = data.gintBalance
-        document.querySelector('.fullName').textContent = data.fullName
-        document.querySelector('.userLevel').textContent = data.userLevel
-        document.querySelector('.Username').textContent = data.userName
+        var data = snapshot.val();
 
-        console.log(data.emailAcc); // 
+        // Calculate user level based on referrals
+        const referralNumber = data.referralNumber || 0;
+        const userLevel = calculateUserLevel(referralNumber);
+
+        // Update user level in database if it changed
+        if (data.userLevel !== userLevel) {
+          update(userData, {
+            userLevel: userLevel
+          });
+        }
+
+        // Update UI with user data
+        document.querySelector('.accountBalance').textContent = data.accountBalance;
+        document.querySelector('.gintBalance').textContent = data.gintBalance;
+        document.querySelector('.fullName').textContent = data.fullName;
+        document.querySelector('.userLevel').textContent = userLevel; // Use calculated level
+        document.querySelector('.Username').textContent = data.userName;
+
+        // Display referral stats
+        displayReferralStats(data);
+
+
       }
     })
     .catch((error) => {
@@ -926,6 +961,324 @@ function handleStartClick() {
     addGintsToBalance();
   }
 }
+
+//adding referral seperate function
+// Enhanced shareReferralLink function with multiple platforms
+function createReferralLink() {
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const userId = currentUser.uid.slice(18);
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?ref=${userId}`;
+  }
+  return '';
+}
+
+function shareReferralLink() {
+
+  if (isMining == true) {
+    alert('Mining in progress wait till mining section is over')
+  } else {
+    const referralLink = createReferralLink();
+    if (!referralLink) {
+      alert('Please log in to get your referral link');
+      return;
+    }
+
+    // Create sharing options modal
+    const shareModal = document.createElement('div');
+    shareModal.id = 'shareModal';
+    shareModal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  `;
+
+    shareModal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    ">
+      <h3 style="color: var(--color1); margin-bottom: 20px;">📤 Share Referral Link</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button class="whatsapp-share-btn" style="
+          background: #25D366;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          📱 WhatsApp
+        </button>
+        
+        <button class="telegram-share-btn" style="
+          background: #0088cc;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          ✈️ Telegram
+        </button>
+        
+        <button class="twitter-share-btn" style="
+          background: #000000;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          𝕏 Twitter
+        </button>
+        
+        <button class="facebook-share-btn" style="
+          background: #1877F2;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          📘 Facebook
+        </button>
+        
+        <button class="reddit-share-btn" style="
+          background: #FF5700;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          🤖 Reddit
+        </button>
+        
+        <button class="copy-share-btn" style="
+          background: #6c757d;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        ">
+          📋 Copy Link
+        </button>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+        <p style="margin: 0; font-size: 12px; color: #666; word-break: break-all;">
+          ${referralLink}
+        </p>
+      </div>
+      
+      <button class="close-share-modal" style="
+        background: var(--color1);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+      ">
+        Close
+      </button>
+    </div>
+  `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('shareModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to page
+    document.body.appendChild(shareModal);
+
+    // Add event listeners to modal buttons
+    // Add event listeners to modal buttons
+    setTimeout(() => {
+      // WhatsApp
+      // WhatsApp
+      document.querySelector('.whatsapp-share-btn').addEventListener('click', function() {
+        const message = `Join HintAll! Earn rewards with my referral link:
+
+${referralLink}
+
+🎉 Sign up now!`;
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+        closeShareModal();
+      });
+
+      // Telegram
+      document.querySelector('.telegram-share-btn').addEventListener('click', function() {
+        const message = `Join HintAll! Earn rewards with my referral link:
+
+${referralLink}
+
+🎉 Sign up now!`;
+        const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join HintAll - Earn Rewards!')}`;
+        window.open(url, '_blank');
+        closeShareModal();
+      });
+
+      // Twitter
+      document.querySelector('.twitter-share-btn').addEventListener('click', function() {
+        const message = `Join HintAll and earn rewards! Use my referral link: ${referralLink} 🎉`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+        closeShareModal();
+      });
+
+
+      // Facebook
+      document.querySelector('.facebook-share-btn').addEventListener('click', function() {
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent('Join HintAll and earn rewards! Use my referral link.')}`;
+        window.open(url, '_blank');
+        closeShareModal();
+      });
+
+      // Reddit
+      document.querySelector('.reddit-share-btn').addEventListener('click', function() {
+        const message = `Join HintAll using my referral link and earn rewards! ${referralLink}`;
+        const url = `https://reddit.com/submit?url=${encodeURIComponent(referralLink)}&title=${encodeURIComponent('Join HintAll - Earn Rewards!')}`;
+        window.open(url, '_blank');
+        closeShareModal();
+      });
+      // Close modal
+      document.querySelector('.close-share-modal').addEventListener('click', function() {
+        closeShareModal();
+      });
+      // Copy Link
+      document.querySelector('.copy-share-btn').addEventListener('click', function() {
+        copyToClipboard(referralLink);
+        closeShareModal();
+      });
+
+      // Close modal when clicking outside
+      shareModal.addEventListener('click', function(e) {
+        if (e.target === shareModal) {
+          closeShareModal();
+        }
+      });
+
+
+    })
+  }
+}
+
+// Close modal function
+function closeShareModal() {
+  const modal = document.getElementById('shareModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+// Function to auto-fill referral from URL
+function autoFillReferralFromURL() {
+  const referralCode = getReferralFromURL();
+  if (referralCode) {
+    const referralInput = document.getElementById('referralUserId');
+    if (referralInput) {
+      referralInput.value = referralCode;
+      // Store in localStorage as backup
+      localStorage.setItem('referralCode', referralCode);
+    }
+  }
+}
+
+// Function to check for referral in URL parameters
+function getReferralFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('ref');
+}
+// Function to display referral stats
+function displayReferralStats(userData) {
+  const referralStats = `
+    <div class="referral-stats">
+      <h3>📊 Referral Stats</h3>
+      <p>Total Referrals: <strong>${userData.referralNumber || 0}</strong></p>
+      <p style="margin-top: 10px;">Your Referral ID: <strong>${auth.currentUser.uid.slice(18)}</strong></p>
+      <button class="transBtn" style="width: 100%; margin-top: 15px;">
+        📤 Share Referral Link
+      </button>
+    </div>
+  `;
+
+  // Add to profile section
+  const profileSection = document.querySelector('.accountValueation');
+  const existingStats = profileSection.querySelector('.referral-stats');
+  if (existingStats) {
+    existingStats.remove();
+  }
+  profileSection.insertAdjacentHTML('beforeend', referralStats);
+}
+// Add event delegation for dynamically created share button
+document.addEventListener('click', function(e) {
+  // Check if the clicked element is the share referral link button
+  if (e.target.textContent.includes('Share Referral Link') ||
+    e.target.closest('button')?.textContent.includes('Share Referral Link')) {
+    shareReferralLink();
+  }
+
+});
+// Function to copy referral link to clipboard
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      alert('Referral link copied to clipboard! 📋\nShare it with your friends!');
+    })
+    .catch(err => {
+      console.error('Failed to copy: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Referral link copied to clipboard! 📋');
+    });
+}
+
+// updating and getting user level seperate function
+// Function to calculate user level based on referrals
+function calculateUserLevel(referralNumber) {
+  if (referralNumber < 20) {
+    return 'Novice';
+  } else if (referralNumber < 30) {
+    return 'Intermediate';
+  } else if (referralNumber < 60) {
+    return 'Advanced';
+  } else if (referralNumber < 500) {
+    return 'Expert';
+  } else {
+    return 'Legendary';
+  }
+}
+
 
 // Initialize the timer display
 /*document.addEventListener('DOMContentLoaded', function() {

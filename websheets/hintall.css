@@ -164,15 +164,15 @@ main {
   position: absolute;
   top: 50%;
   left: 5%;
-  font-size :25px ;
-  padding-top :5px;
+  font-size: 25px;
+  padding-top: 5px;
 }
 
 .nextBtn {
   position: absolute;
   top: 50%;
   right: 5%;
-  font-size :25px ;
+  font-size: 25px;
   padding-top: 5px;
 }
 
@@ -443,6 +443,7 @@ main {
   bottom: 0;
 }
 
+
 /*span tags*/
 .underling {
   display: block;
@@ -661,6 +662,26 @@ main {
   visibility: visible;
   display: block;
 
+}
+
+/*new css function for referral */
+.referral-stats {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.referral-stats h3 {
+  color: var(--color2);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.referral-stats p {
+  color: var(--color2);
+  margin: 5px 0;
 }
 
 /* animation */
