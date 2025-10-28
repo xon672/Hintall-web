@@ -692,7 +692,7 @@ function sendUserDetailsForTransaction() {
   var accounName = document.getElementById('bankAccountName').value
   var accountNumber = document.getElementById('bankAccountNumber').value
   var bankName = document.getElementById('bankName').value
-  if (accounName == '' || accountNumber == 0 || ngnAmount == 0 || bankName == '') {
+  if (accounName == '' || accountNumber == '' || ngnAmount == '' || bankName == '') {
     alert('Please Fill all required inputs')
   } else {
     onAuthStateChanged(auth, (user) => {
@@ -710,17 +710,31 @@ function sendUserDetailsForTransaction() {
               get(userData).then((snapshot) => {
                 if (snapshot.exists()) {
                   var data = snapshot.val()
-                  if (ngnAmount < 1000) {
+                  if (parseFloat(ngnAmount) < 1000) {
                     alert('Widthrawal threshold should be above 1000Ngn')
-                  } else if (data.accountBalance < ngnAmount) {
+                  } else if (data.accountBalance < parseFloat(ngnAmount)) {
                     alert('Insufficient Funds')
                   } else {
-                    addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName)
+                    addPendingWidthdrawal(user, parseFloat(ngnAmount), accounName, parseFloat(accountNumber), bankName)
                   }
                 }
               })
             }
           }
+          else {
+              get(userData).then((snapshot) => {
+                if (snapshot.exists()) {
+                  var data = snapshot.val()
+                  if (parseFloat(ngnAmount) < 1000) {
+                    alert('Widthrawal threshold should be above 1000Ngn')
+                  } else if (data.accountBalance < parseFloat(ngnAmount)) {
+                    alert('Insufficient Funds')
+                  } else {
+                    addPendingWidthdrawal(user, parseFloat(ngnAmount), accounName, parseFloat(accountNumber), bankName)
+                  }
+                }
+              })
+            }
         })
 
       }
