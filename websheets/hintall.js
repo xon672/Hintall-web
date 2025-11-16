@@ -2008,6 +2008,41 @@ function calculateSongUserCounts(activeSearches) {
     return songCounts;
 }
 
+// Check if user is already searching for the same song
+function isUserAlreadySearchingForSong(userId, songName, artistName) {
+    const findSongListRef = ref(db, 'Find Song Lists/');
+    
+    return get(findSongListRef).then((snapshot) => {
+        const songsData = snapshot.val();
+        if (!songsData) return false;
+        
+        const userSongName = songName.toLowerCase().trim();
+        const userArtistName = artistName.toLowerCase().trim();
+        
+        for (const [songId, songData] of Object.entries(songsData)) {
+            if (songData.originalUserId === userId && songData.searchSatus !== false) {
+                const existingSongName = songData.songName.toLowerCase().trim();
+                const existingArtistName = songData.musician.toLowerCase().trim();
+                
+                // Check for exact match
+                if (existingSongName === userSongName && existingArtistName === userArtistName) {
+                    return true;
+                }
+                
+                // Check for similar matches (fuzzy matching)
+                const songSimilarity = calculateSimilarity(existingSongName, userSongName);
+                const artistSimilarity = calculateSimilarity(existingArtistName, userArtistName);
+                
+                if (songSimilarity > 0.8 && artistSimilarity > 0.8) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    });
+}
+
 // Add song to find list with duplicate prevention and image support
 function addSongToFindList() {
     const musicName = document.getElementById('musicName').value.trim();
@@ -2030,129 +2065,142 @@ function addSongToFindList() {
             return;
         }
         
-        const userData = child(dbRef, 'Web Users/' + user.uid.slice(18));
+        const userId = user.uid.slice(18);
+        const userData = child(dbRef, 'Web Users/' + userId);
         const findSongListRef = ref(db, 'Find Song Lists/');
         
-        // First check if the same song already exists
-        get(findSongListRef).then((snapshot) => {
-            const songsData = snapshot.val();
-            let duplicateFound = false;
-            let duplicateSongInfo = '';
-            let userCount = 1;
+        // First check if user is already searching for this song
+        isUserAlreadySearchingForSong(userId, musicName, artistName).then((isAlreadySearching) => {
+            if (isAlreadySearching) {
+                alert(`❌ You are already searching for this song!\n\n"${musicName}" by ${artistName}\n\nPlease check your active searches.`);
+                return;
+            }
             
-            if (songsData) {
-                // Check for duplicates and count users
-                Object.values(songsData).forEach(song => {
-                    if (song.songName && song.musician && song.searchSatus !== false) {
-                        const existingSongName = song.songName.toLowerCase().trim();
-                        const existingArtistName = song.musician.toLowerCase().trim();
-                        const newSongName = musicName.toLowerCase().trim();
-                        const newArtistName = artistName.toLowerCase().trim();
-                        
-                        if (existingSongName === newSongName && existingArtistName === newArtistName) {
-                            duplicateFound = true;
-                            duplicateSongInfo = `"${song.songName}" by ${song.musician}`;
-                            userCount++;
+            // Then check if the same song already exists from other users
+            get(findSongListRef).then((snapshot) => {
+                const songsData = snapshot.val();
+                let duplicateFound = false;
+                let duplicateSongInfo = '';
+                let userCount = 1;
+                
+                if (songsData) {
+                    // Check for duplicates and count users
+                    Object.values(songsData).forEach(song => {
+                        if (song.songName && song.musician && song.searchSatus !== false) {
+                            const existingSongName = song.songName.toLowerCase().trim();
+                            const existingArtistName = song.musician.toLowerCase().trim();
+                            const newSongName = musicName.toLowerCase().trim();
+                            const newArtistName = artistName.toLowerCase().trim();
+                            
+                            if (existingSongName === newSongName && existingArtistName === newArtistName) {
+                                duplicateFound = true;
+                                duplicateSongInfo = `"${song.songName}" by ${song.musician}`;
+                                userCount++;
+                            }
                         }
-                    }
-                });
-            }
-            
-            if (duplicateFound) {
-                const joinMessage = userCount > 1 ? 
-                    `Join ${userCount} other users looking for this song!` :
-                    `Someone else is also looking for this song!`;
-                
-                const userConfirmation = confirm(
-                    `🎵 "${musicName}" by ${artistName}\n\n` +
-                    `👥 ${userCount} ${userCount === 1 ? 'user is' : 'users are'} already searching for this song!\n\n` +
-                    `${joinMessage}\n\n` +
-                    `Do you want to join them and search for this song?\n\n` +
-                    `This will cost 166 Gints from your balance.`
-                );
-                
-                if (!userConfirmation) return;
-            }
-            
-            // Check user balance and proceed
-            get(userData).then((userSnapshot) => {
-                if (!userSnapshot.exists()) {
-                    alert('❌ User data not found');
-                    return;
+                    });
                 }
                 
-                const data = userSnapshot.val();
-                const userGintBalance = data.gintBalance || 0;
-                
-                if (userGintBalance < 166) {
-                    alert(`❌ Insufficient balance! You need 166 Gints but only have ${userGintBalance} Gints`);
-                    return;
-                }
-                
-                // If no duplicate found, show regular confirmation
-                if (!duplicateFound) {
-                    const userConfirmation = confirm(`🔍 Search for: "${musicName}" by ${artistName}\n\nThis will cost 166 Gints from your balance.\n\nCurrent Balance: ${userGintBalance} Gints\nAfter Charge: ${userGintBalance - 166} Gints\n\nClick OK to proceed`);
+                if (duplicateFound) {
+                    const joinMessage = userCount > 1 ? 
+                        `Join ${userCount} other users looking for this song!` :
+                        `Someone else is also looking for this song!`;
+                    
+                    const userConfirmation = confirm(
+                        `🎵 "${musicName}" by ${artistName}\n\n` +
+                        `👥 ${userCount} ${userCount === 1 ? 'user is' : 'users are'} already searching for this song!\n\n` +
+                        `${joinMessage}\n\n` +
+                        `Do you want to join them and search for this song?\n\n` +
+                        `This will cost 166 Gints from your balance.`
+                    );
                     
                     if (!userConfirmation) return;
                 }
                 
-                alert('⏳ Processing your song search request...');
-                
-                update(userData, {
-                    gintBalance: increment(-166)
-                }).then(() => {
-                    // Generate unique ID for multiple songs from same user
-                    const songId = user.uid.slice(18) + '_' + Date.now();
-                    
-                    const songData = {
-                        songName: musicName,
-                        musician: artistName,
-                        searchSatus: true,
-                        requestedAt: new Date().toISOString(),
-                        originalUserId: user.uid.slice(18),
-                        songId: songId
-                    };
-                    
-                    // Add image if available
-                    if (songImage) {
-                        songData.songImage = songImage;
+                // Check user balance and proceed
+                get(userData).then((userSnapshot) => {
+                    if (!userSnapshot.exists()) {
+                        alert('❌ User data not found');
+                        return;
                     }
                     
-                    set(ref(db, "Find Song Lists/" + songId), songData).then(() => {
-                        // Clear form and local storage
-                        document.getElementById('musicName').value = '';
-                        document.getElementById('artistName').value = '';
-                        document.getElementById('imagePreview').style.display = 'none';
-                        document.getElementById('songImageUpload').value = '';
-                        localStorage.removeItem('currentSongImage');
+                    const data = userSnapshot.val();
+                    const userGintBalance = data.gintBalance || 0;
+                    
+                    if (userGintBalance < 166) {
+                        alert(`❌ Insufficient balance! You need 166 Gints but only have ${userGintBalance} Gints`);
+                        return;
+                    }
+                    
+                    // If no duplicate found, show regular confirmation
+                    if (!duplicateFound) {
+                        const userConfirmation = confirm(`🔍 Search for: "${musicName}" by ${artistName}\n\nThis will cost 166 Gints from your balance.\n\nCurrent Balance: ${userGintBalance} Gints\nAfter Charge: ${userGintBalance - 166} Gints\n\nClick OK to proceed`);
                         
-                        getAllUserCredential(user);
+                        if (!userConfirmation) return;
+                    }
+                    
+                    alert('⏳ Processing your song search request...');
+                    
+                    update(userData, {
+                        gintBalance: increment(-166)
+                    }).then(() => {
+                        // Generate unique ID for multiple songs from same user
+                        const songId = userId + '_' + Date.now();
                         
-                        if (duplicateFound) {
-                            alert(`✅ Success! You've joined ${userCount} ${userCount === 1 ? 'other user' : 'other users'} searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when the song is found!`);
-                        } else {
-                            alert(`✅ Success! You've been charged 166 Gints\n\nWe're now searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when we find your song!`);
+                        const songData = {
+                            songName: musicName,
+                            musician: artistName,
+                            searchSatus: true,
+                            requestedAt: new Date().toISOString(),
+                            originalUserId: userId,
+                            songId: songId
+                        };
+                        
+                        // Add image if available
+                        if (songImage) {
+                            songData.songImage = songImage;
                         }
                         
-                        displaySongsUsersAreLookingFor();
+                        set(ref(db, "Find Song Lists/" + songId), songData).then(() => {
+                            // Clear form and local storage
+                            document.getElementById('musicName').value = '';
+                            document.getElementById('artistName').value = '';
+                            document.getElementById('imagePreview').style.display = 'none';
+                            document.getElementById('songImageUpload').value = '';
+                            localStorage.removeItem('currentSongImage');
+                            
+                            getAllUserCredential(user);
+                            
+                            if (duplicateFound) {
+                                alert(`✅ Success! You've joined ${userCount} ${userCount === 1 ? 'other user' : 'other users'} searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when the song is found!`);
+                            } else {
+                                alert(`✅ Success! You've been charged 166 Gints\n\nWe're now searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when we find your song!`);
+                            }
+                            
+                            displaySongsUsersAreLookingFor();
+                        }).catch((error) => {
+                            console.error('Error adding song to search list:', error);
+                            alert('❌ Failed to add song to search list. Please try again.');
+                            // Refund the Gints if song addition failed
+                            update(userData, { gintBalance: increment(166) });
+                        });
                     }).catch((error) => {
-                        console.error('Error adding song to search list:', error);
-                        alert('❌ Failed to add song to search list. Please try again.');
-                        // Refund the Gints if song addition failed
-                        update(userData, { gintBalance: increment(166) });
+                        console.error('Error updating Gint balance:', error);
+                        alert('❌ Transaction failed. Please try again.');
                     });
                 }).catch((error) => {
-                    console.error('Error updating Gint balance:', error);
-                    alert('❌ Transaction failed. Please try again.');
+                    console.error('Error fetching user data:', error);
+                    alert('❌ Error accessing your account. Please try again.');
                 });
+                
             }).catch((error) => {
-                console.error('Error fetching user data:', error);
-                alert('❌ Error accessing your account. Please try again.');
+                console.error('Error checking for duplicates:', error);
+                alert('❌ Error checking song database. Please try again.');
             });
             
         }).catch((error) => {
-            console.error('Error checking for duplicates:', error);
-            alert('❌ Error checking song database. Please try again.');
+            console.error('Error checking user existing searches:', error);
+            alert('❌ Error checking your existing searches. Please try again.');
         });
     });
 }
@@ -2234,7 +2282,38 @@ function uploadSongFile(file, songId, songName, artistName) {
     }, 2000);
 }
 
-// [Rest of the functions remain the same - notifyAllSimilarSongRequesters, checkSimilarSongs, calculateSimilarity, levenshteinDistance, sendSimilarSongNotification, handleSongDownload, handleMarkCompleted, handleCancelSearch, deleteSongFromList]
+// Calculate similarity between two strings (0 to 1)
+function calculateSimilarity(str1, str2) {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    return (longer.length - levenshteinDistance(longer, shorter)) / parseFloat(longer.length);
+}
+
+// Levenshtein distance algorithm for fuzzy matching
+function levenshteinDistance(str1, str2) {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+        for (let i = 1; i <= str1.length; i++) {
+            const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+            matrix[j][i] = Math.min(
+                matrix[j][i - 1] + 1,
+                matrix[j - 1][i] + 1,
+                matrix[j - 1][i - 1] + indicator
+            );
+        }
+    }
+    
+    return matrix[str2.length][str1.length];
+}
+
+// [Rest of the functions remain the same - notifyAllSimilarSongRequesters, checkSimilarSongs, sendSimilarSongNotification, handleSongDownload, handleMarkCompleted, handleCancelSearch, deleteSongFromList]
 
 // Initialize when user is logged in
 onAuthStateChanged(auth, (user) => {
