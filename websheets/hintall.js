@@ -60,6 +60,7 @@ var swapGintToNgnBtn = document.getElementById('swapGintToNgnBtn')
 var widthrawNgnBtn = document.getElementById('widthrawNgn')
 var tranferGintBtn = document.getElementById('tranferGintBtn')
 var userIdSlice = ''
+var mhintBtnScroll = document.getElementById('mhintBtn')
 
 //on window load check if user is signed in
 window.onload = function() {
@@ -151,6 +152,7 @@ document.querySelector('.downloadApkBtn').addEventListener('click', () => {
 })
 widthrawNgnBtn.addEventListener('click', sendUserDetailsForTransaction)
 tranferGintBtn.addEventListener('click', tranferGintToUser)
+mhintBtnScroll.addEventListener('click',scrollToSubServicePage)
 
 //for each
 links.forEach(smoothScroll)
@@ -822,6 +824,20 @@ function tranferGint(user, amountToTransfer, receiverId) {
     }
   })
 }
+function scrollToSubServicePage(){
+  var serviceContainer= document.getElementById('Service')
+  var mhintService = document.querySelector('.mhintService')
+  var position = mhintService.offsetTop 
+  console.log(position)
+  
+  serviceContainer.scrollTo({
+    right:0,
+    top:position
+    
+  })
+  
+}
+
 
 // Mining separate functionTimer
 // Mining variables
@@ -1580,106 +1596,763 @@ function hideLoadingState() {
     loadingElement.remove();
   }
 }
-/*function createBrowserNotification(title, message) {
-  // Remove any existing notification
-  const existingNotification = document.getElementById('browserNotification');
-  if (existingNotification) {
-    existingNotification.remove();
-  }
+// =============================================
+// MHINT SERVICE - COMPLETE IMPLEMENTATION
+// =============================================
 
-  const notificationElement = document.createElement('div');
-  notificationElement.id = 'browserNotification';
-  notificationElement.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, var(--color1), var(--color2));
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 9998;
-            font-size: 14px;
-            text-align: left;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            border: 2px solid var(--color3);
-            max-width: 300px;
-            font-family: Arial, sans-serif;
-            animation: notificationSlideIn 0.5s ease-out;
-        ">
-            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <div style="font-size: 20px; margin-right: 10px;">💰</div>
-                <div style="font-weight: bold; font-size: 16px;">${title}</div>
-            </div>
-            <div style="font-size: 12px; opacity: 0.9; line-height: 1.4;">${message}</div>
-            <div style="text-align: right; margin-top: 10px;">
-                <button onclick="document.getElementById('browserNotification').remove()" style="
-                    background: rgba(255,255,255,0.2);
-                    border: 1px solid rgba(255,255,255,0.3);
+// Initialize Mhint Service
+function initializeMhintService() {
+    displaySongsUsersAreLookingFor();
+    
+    const storeFindSongBtn = document.getElementById('storeFindSong');
+    if (storeFindSongBtn) {
+        storeFindSongBtn.addEventListener('click', addSongToFindList);
+    }
+    
+    // Add image upload functionality
+    setupImageUpload();
+}
+
+// Setup image upload for song search
+function setupImageUpload() {
+    const musicNameInput = document.getElementById('musicName');
+    const artistNameInput = document.getElementById('artistName');
+    
+    // Create image upload container
+    const imageUploadContainer = document.createElement('div');
+    imageUploadContainer.innerHTML = `
+        <div style="margin: 15px 0;">
+            <p style="color: white; margin-bottom: 10px;">📸 Add Song Screenshot (Optional)</p>
+            <input type="file" id="songImageUpload" accept="image/*" style="display: none;">
+            <button type="button" id="uploadImageBtn" style="
+                background: white; 
+                color: #333; 
+                border: none; 
+                padding: 10px 15px; 
+                border-radius: 5px; 
+                cursor: pointer; 
+                font-size: 14px; 
+                width: 100%;
+            ">
+                📁 Choose Image
+            </button>
+            <div id="imagePreview" style="
+                margin-top: 10px; 
+                display: none;
+                text-align: center;
+            ">
+                <img id="previewImg" style="
+                    max-width: 100%;
+                    max-height: 200px;
+                    border-radius: 8px;
+                    border: 2px solid white;
+                ">
+                <button type="button" id="removeImageBtn" style="
+                    background: #D9534F;
                     color: white;
-                    padding: 4px 12px;
+                    border: none;
+                    padding: 5px 10px;
                     border-radius: 5px;
-                    font-size: 12px;
                     cursor: pointer;
-                ">Close</button>
+                    margin-top: 5px;
+                    font-size: 12px;
+                ">
+                    ❌ Remove Image
+                </button>
             </div>
         </div>
     `;
-
-  // Add notification styles
-  const notificationStyle = document.createElement('style');
-  notificationStyle.id = 'notificationStyles';
-  notificationStyle.textContent = `
-        #browserNotification {
-            all: initial !important;
-            font-family: Arial, sans-serif !important;
-        }
-        #browserNotification * {
-            all: unset !important;
-            font-family: Arial, sans-serif !important;
-            box-sizing: border-box !important;
-        }
-        @keyframes notificationSlideIn {
-            from { 
-                opacity: 0; 
-                transform: translateX(100px) !important; 
+    
+    // Insert image upload after artist input
+    artistNameInput.parentNode.insertBefore(imageUploadContainer, artistNameInput.nextSibling);
+    
+    // Add event listeners for image upload
+    document.getElementById('uploadImageBtn').addEventListener('click', function() {
+        document.getElementById('songImageUpload').click();
+    });
+    
+    document.getElementById('songImageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Please select an image file (JPG, PNG, etc.)');
+                return;
             }
-            to { 
-                opacity: 1; 
-                transform: translateX(0) !important; 
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Image too large! Please select an image smaller than 5MB');
+                return;
             }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                // Store image data for later use
+                localStorage.setItem('currentSongImage', e.target.result);
+            };
+            reader.readAsDataURL(file);
         }
-        #browserNotification > div {
-            animation: notificationSlideIn 0.5s ease-out !important;
-        }
-    `;
-
-  document.head.appendChild(notificationStyle);
-  document.body.appendChild(notificationElement);
-
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (notificationElement.parentNode) {
-      notificationElement.remove();
+    });
+    
+    document.getElementById('removeImageBtn').addEventListener('click', function() {
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('songImageUpload').value = '';
+        localStorage.removeItem('currentSongImage');
+    });
+    
+    // Load saved image on page refresh
+    const savedImage = localStorage.getItem('currentSongImage');
+    if (savedImage) {
+        document.getElementById('previewImg').src = savedImage;
+        document.getElementById('imagePreview').style.display = 'block';
     }
-    if (notificationStyle.parentNode) {
-      notificationStyle.remove();
+}
+
+// Display songs users are looking for from Firebase
+function displaySongsUsersAreLookingFor() {
+    const findSongListRef = ref(db, 'Find Song Lists/');
+    const findSongListContainer = document.querySelector('.findSongList');
+    if (!findSongListContainer) return;
+    
+    findSongListContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: white;">Loading songs...</div>';
+    
+    onValue(findSongListRef, (snapshot) => {
+        const songsData = snapshot.val();
+        const findSongListContainer = document.querySelector('.findSongList');
+        
+        if (!songsData || Object.keys(songsData).length === 0) {
+            findSongListContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: white;">
+                    <p>🎵 No songs are currently being searched for</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Be the first to request a song!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const songsArray = Object.entries(songsData).map(([songId, songData]) => ({
+            songId,
+            ...songData
+        }));
+        
+        // Separate active searches and found songs
+        const activeSearches = songsArray.filter(song => song.searchSatus !== false);
+        const foundSongs = songsArray.filter(song => song.searchSatus === false && song.audioUrl);
+        
+        if (activeSearches.length === 0 && foundSongs.length === 0) {
+            findSongListContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: white;">
+                    <p>✅ All song requests have been fulfilled!</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Check back later for new requests</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Calculate user counts for each song
+        const songUserCounts = calculateSongUserCounts(activeSearches);
+        
+        let songListHTML = '';
+        
+        // Display found songs first
+        if (foundSongs.length > 0) {
+            songListHTML += `
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #4CAF50; margin-bottom: 15px; border-bottom: 2px solid #4CAF50; padding-bottom: 5px;">
+                        🎉 Found Songs - Ready for Download!
+                    </h3>
+                    ${foundSongs.map(song => {
+                        const isCurrentUser = auth.currentUser && song.originalUserId === auth.currentUser.uid.slice(18);
+                        const isMatchedSong = song.matchedFrom;
+                        
+                        return `
+                        <div class="found-song-item" style="
+                            background: rgba(76, 175, 80, 0.15);
+                            padding: 15px;
+                            margin: 10px 0;
+                            border-radius: 10px;
+                            border-left: 4px solid #4CAF50;
+                            border: 2px solid #4CAF50;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0; color: white; font-size: 16px;">
+                                        🎵 ${song.songName || 'Unknown Song'} ✅
+                                        ${isMatchedSong ? ' 🔄' : ''}
+                                    </h4>
+                                    <p style="margin: 0; color: #ccc; font-size: 14px;">🎤 Artist: ${song.musician || 'Unknown Artist'}</p>
+                                    <p style="margin: 5px 0 0 0; color: #aaa; font-size: 12px;">
+                                        👤 Requested by: User${song.originalUserId}
+                                        ${song.uploadedBy ? `<br>📤 Uploaded by: User${song.uploadedBy}` : ''}
+                                        ${isMatchedSong ? `<br>🔄 Automatically matched from similar song` : ''}
+                                        ${song.uploadedAt ? `<br>⏰ Found on: ${new Date(song.uploadedAt).toLocaleDateString()}` : ''}
+                                    </p>
+                                    
+                                    ${song.songImage ? `
+                                        <div style="margin: 15px 0; text-align: center;">
+                                            <p style="color: #4CAF50; margin-bottom: 8px; font-size: 14px;">
+                                                <strong>📸 Song Screenshot:</strong>
+                                            </p>
+                                            <img src="${song.songImage}" 
+                                                 alt="Song screenshot" 
+                                                 style="
+                                                    max-width: 100%;
+                                                    max-height: 200px;
+                                                    border-radius: 8px;
+                                                    border: 2px solid #4CAF50;
+                                                 "
+                                                 onerror="this.style.display='none'">
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <div style="margin-top: 15px;">
+                                        <p style="color: #4CAF50; margin-bottom: 8px; font-size: 14px;">
+                                            <strong>✅ Song Found! Preview before download:</strong>
+                                        </p>
+                                        <audio controls style="width: 100%; height: 40px; margin-bottom: 12px; border-radius: 20px;">
+                                            <source src="${song.audioUrl}" type="audio/mpeg">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                            <a href="${song.audioUrl}" download="${(song.songName || 'song').replace(/[^a-z0-9]/gi, '_')}.mp3" 
+                                               class="download-song-link"
+                                               data-song-id="${song.songId}"
+                                               style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; 
+                                                      text-decoration: none; display: inline-block; font-size: 14px; transition: all 0.3s ease;">
+                                                📥 Download Song
+                                            </a>
+                                            ${isCurrentUser ? `
+                                                <button class="mark-completed-btn" 
+                                                        data-song-id="${song.songId}"
+                                                        style="background: white; color: #333; border: none; padding: 10px 15px; 
+                                                               border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+                                                    ✅ Mark as Completed
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <span style="
+                                    background: #4CAF50;
+                                    color: white;
+                                    padding: 5px 10px;
+                                    border-radius: 15px;
+                                    font-size: 12px;
+                                    white-space: nowrap;
+                                ">${isMatchedSong ? '🔄 Matched' : '✅ Available'}</span>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        // Display active searches
+        if (activeSearches.length > 0) {
+            songListHTML += `
+                <div>
+                    <h3 style="color: white; margin-bottom: 15px; border-bottom: 2px solid white; padding-bottom: 5px;">
+                        🔍 Users Are Looking For These Songs
+                    </h3>
+                    ${activeSearches.map(song => {
+                        const isCurrentUser = auth.currentUser && song.originalUserId === auth.currentUser.uid.slice(18);
+                        const userCount = songUserCounts[song.songName + '|' + song.musician] || 1;
+                        const otherUsersCount = userCount - (isCurrentUser ? 1 : 0);
+                        
+                        return `
+                        <div class="song-request-item" style="
+                            background: rgba(255,255,255,0.1);
+                            padding: 15px;
+                            margin: 10px 0;
+                            border-radius: 10px;
+                            border-left: 4px solid white;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0; color: white; font-size: 16px;">
+                                        🎵 ${song.songName || 'Unknown Song'}
+                                    </h4>
+                                    <p style="margin: 0; color: #ccc; font-size: 14px;">🎤 Artist: ${song.musician || 'Unknown Artist'}</p>
+                                    <p style="margin: 5px 0 0 0; color: #aaa; font-size: 12px;">
+                                        👤 Requested by: User${song.originalUserId}
+                                        ${song.requestedAt ? `<br>⏰ Requested: ${new Date(song.requestedAt).toLocaleDateString()}` : ''}
+                                    </p>
+                                    
+                                    <!-- User Count Display -->
+                                    <div style="margin: 12px 0; padding: 10px; background: rgba(255, 193, 7, 0.2); border-radius: 8px; border: 1px solid #FFC107;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 18px; color: #FFC107;">👥</span>
+                                            <div>
+                                                <div style="font-size: 14px; color: #FFC107; font-weight: bold;">
+                                                    ${userCount} ${userCount === 1 ? 'user is' : 'users are'} searching for this song
+                                                </div>
+                                                ${otherUsersCount > 0 ? `
+                                                    <div style="font-size: 12px; color: #FFD54F; margin-top: 3px;">
+                                                        ${isCurrentUser ? 
+                                                            `You + ${otherUsersCount} other ${otherUsersCount === 1 ? 'person' : 'people'}` : 
+                                                            `${userCount} ${userCount === 1 ? 'person' : 'people'} in the community`
+                                                        }
+                                                    </div>
+                                                ` : `
+                                                    <div style="font-size: 12px; color: #FFD54F; margin-top: 3px;">
+                                                        Be the first to help find this song!
+                                                    </div>
+                                                `}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    ${song.songImage ? `
+                                        <div style="margin: 15px 0; text-align: center;">
+                                            <p style="color: white; margin-bottom: 8px; font-size: 14px;">
+                                                <strong>📸 Song Screenshot:</strong>
+                                            </p>
+                                            <img src="${song.songImage}" 
+                                                 alt="Song screenshot" 
+                                                 style="
+                                                    max-width: 100%;
+                                                    max-height: 200px;
+                                                    border-radius: 8px;
+                                                    border: 2px solid white;
+                                                 "
+                                                 onerror="this.style.display='none'">
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <div style="margin-top: 10px;">
+                                        <button class="upload-song-btn" 
+                                                data-song-id="${song.songId}"
+                                                data-song-name="${song.songName}"
+                                                data-artist-name="${song.musician}"
+                                                style="background: white; color: #333; border: none; padding: 8px 15px; 
+                                                       border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+                                            📤 I Have This Song
+                                        </button>
+                                        ${isCurrentUser ? `
+                                            <button class="cancel-search-btn" 
+                                                    data-song-id="${song.songId}"
+                                                    style="background: #D9534F; color: white; border: none; padding: 8px 15px; 
+                                                           border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 10px; transition: all 0.3s ease;">
+                                                ❌ Cancel Search
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                                    <span style="
+                                        background: white;
+                                        color: #333;
+                                        padding: 5px 10px;
+                                        border-radius: 15px;
+                                        font-size: 12px;
+                                        white-space: nowrap;
+                                    ">🔍 Searching</span>
+                                    <div style="display: flex; align-items: center; gap: 5px; background: #FFC107; padding: 4px 8px; border-radius: 12px;">
+                                        <span style="font-size: 12px; color: #333; font-weight: bold;">👥</span>
+                                        <span style="font-size: 12px; color: #333; font-weight: bold;">${userCount}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        findSongListContainer.innerHTML = songListHTML;
+        
+        // Add event listeners
+        document.querySelectorAll('.upload-song-btn').forEach(button => {
+            button.addEventListener('click', handleSongUpload);
+        });
+        
+        document.querySelectorAll('.download-song-link').forEach(link => {
+            link.addEventListener('click', handleSongDownload);
+        });
+        
+        document.querySelectorAll('.mark-completed-btn').forEach(button => {
+            button.addEventListener('click', handleMarkCompleted);
+        });
+        
+        document.querySelectorAll('.cancel-search-btn').forEach(button => {
+            button.addEventListener('click', handleCancelSearch);
+        });
+        
+    }, (error) => {
+        const findSongListContainer = document.querySelector('.findSongList');
+        findSongListContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #D9534F;">
+                <p>❌ Error loading songs</p>
+                <p style="font-size: 14px; margin-top: 10px;">Please try again later</p>
+            </div>
+        `;
+    });
+}
+
+// Calculate how many users are searching for each song
+function calculateSongUserCounts(activeSearches) {
+    const songCounts = {};
+    
+    activeSearches.forEach(song => {
+        const songKey = song.songName + '|' + song.musician;
+        if (songCounts[songKey]) {
+            songCounts[songKey]++;
+        } else {
+            songCounts[songKey] = 1;
+        }
+    });
+    
+    return songCounts;
+}
+
+// Add song to find list with duplicate prevention and image support
+function addSongToFindList() {
+    const musicName = document.getElementById('musicName').value.trim();
+    const artistName = document.getElementById('artistName').value.trim();
+    const songImage = localStorage.getItem('currentSongImage');
+    
+    if (!musicName || !artistName) {
+        alert('❌ Please fill in both song name and artist name');
+        return;
     }
-  }, 5000);
-}*/
-
-
-/* 
-    .catch((error)=>{
-        const errorCode=error.code;
-        if(errorCode==='auth/invalid-credential'){
-            showMessage('Incorrect Email or Password', 'signInMessage');
+    
+    if (musicName.length < 2 || artistName.length < 2) {
+        alert('❌ Please enter valid song and artist names');
+        return;
+    }
+    
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert('❌ Please log in to search for songs');
+            return;
         }
-        else{
-            showMessage.('Account does not Exist', 'signInMessage');
+        
+        const userData = child(dbRef, 'Web Users/' + user.uid.slice(18));
+        const findSongListRef = ref(db, 'Find Song Lists/');
+        
+        // First check if the same song already exists
+        get(findSongListRef).then((snapshot) => {
+            const songsData = snapshot.val();
+            let duplicateFound = false;
+            let duplicateSongInfo = '';
+            let userCount = 1;
+            
+            if (songsData) {
+                // Check for duplicates and count users
+                Object.values(songsData).forEach(song => {
+                    if (song.songName && song.musician && song.searchSatus !== false) {
+                        const existingSongName = song.songName.toLowerCase().trim();
+                        const existingArtistName = song.musician.toLowerCase().trim();
+                        const newSongName = musicName.toLowerCase().trim();
+                        const newArtistName = artistName.toLowerCase().trim();
+                        
+                        if (existingSongName === newSongName && existingArtistName === newArtistName) {
+                            duplicateFound = true;
+                            duplicateSongInfo = `"${song.songName}" by ${song.musician}`;
+                            userCount++;
+                        }
+                    }
+                });
+            }
+            
+            if (duplicateFound) {
+                const joinMessage = userCount > 1 ? 
+                    `Join ${userCount} other users looking for this song!` :
+                    `Someone else is also looking for this song!`;
+                
+                const userConfirmation = confirm(
+                    `🎵 "${musicName}" by ${artistName}\n\n` +
+                    `👥 ${userCount} ${userCount === 1 ? 'user is' : 'users are'} already searching for this song!\n\n` +
+                    `${joinMessage}\n\n` +
+                    `Do you want to join them and search for this song?\n\n` +
+                    `This will cost 166 Gints from your balance.`
+                );
+                
+                if (!userConfirmation) return;
+            }
+            
+            // Check user balance and proceed
+            get(userData).then((userSnapshot) => {
+                if (!userSnapshot.exists()) {
+                    alert('❌ User data not found');
+                    return;
+                }
+                
+                const data = userSnapshot.val();
+                const userGintBalance = data.gintBalance || 0;
+                
+                if (userGintBalance < 166) {
+                    alert(`❌ Insufficient balance! You need 166 Gints but only have ${userGintBalance} Gints`);
+                    return;
+                }
+                
+                // If no duplicate found, show regular confirmation
+                if (!duplicateFound) {
+                    const userConfirmation = confirm(`🔍 Search for: "${musicName}" by ${artistName}\n\nThis will cost 166 Gints from your balance.\n\nCurrent Balance: ${userGintBalance} Gints\nAfter Charge: ${userGintBalance - 166} Gints\n\nClick OK to proceed`);
+                    
+                    if (!userConfirmation) return;
+                }
+                
+                alert('⏳ Processing your song search request...');
+                
+                update(userData, {
+                    gintBalance: increment(-166)
+                }).then(() => {
+                    // Generate unique ID for multiple songs from same user
+                    const songId = user.uid.slice(18) + '_' + Date.now();
+                    
+                    const songData = {
+                        songName: musicName,
+                        musician: artistName,
+                        searchSatus: true,
+                        requestedAt: new Date().toISOString(),
+                        originalUserId: user.uid.slice(18),
+                        songId: songId
+                    };
+                    
+                    // Add image if available
+                    if (songImage) {
+                        songData.songImage = songImage;
+                    }
+                    
+                    set(ref(db, "Find Song Lists/" + songId), songData).then(() => {
+                        // Clear form and local storage
+                        document.getElementById('musicName').value = '';
+                        document.getElementById('artistName').value = '';
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('songImageUpload').value = '';
+                        localStorage.removeItem('currentSongImage');
+                        
+                        getAllUserCredential(user);
+                        
+                        if (duplicateFound) {
+                            alert(`✅ Success! You've joined ${userCount} ${userCount === 1 ? 'other user' : 'other users'} searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when the song is found!`);
+                        } else {
+                            alert(`✅ Success! You've been charged 166 Gints\n\nWe're now searching for: "${musicName}" by ${artistName}\n\nYou'll be notified when we find your song!`);
+                        }
+                        
+                        displaySongsUsersAreLookingFor();
+                    }).catch((error) => {
+                        console.error('Error adding song to search list:', error);
+                        alert('❌ Failed to add song to search list. Please try again.');
+                        // Refund the Gints if song addition failed
+                        update(userData, { gintBalance: increment(166) });
+                    });
+                }).catch((error) => {
+                    console.error('Error updating Gint balance:', error);
+                    alert('❌ Transaction failed. Please try again.');
+                });
+            }).catch((error) => {
+                console.error('Error fetching user data:', error);
+                alert('❌ Error accessing your account. Please try again.');
+            });
+            
+        }).catch((error) => {
+            console.error('Error checking for duplicates:', error);
+            alert('❌ Error checking song database. Please try again.');
+        });
+    });
+}
+
+// Handle song upload
+function handleSongUpload(event) {
+    const button = event.target;
+    const songId = button.getAttribute('data-song-id');
+    const songName = button.getAttribute('data-song-name');
+    const artistName = button.getAttribute('data-artist-name');
+    
+    if (!auth.currentUser) {
+        alert('❌ Please log in to upload songs');
+        return;
+    }
+    
+    if (songId.startsWith(auth.currentUser.uid.slice(18))) {
+        alert('❌ You cannot upload a song that you requested yourself');
+        return;
+    }
+    
+    const uploadConfirmation = confirm(`📤 Upload Song\n\n"${songName}" by ${artistName}\n\nDo you have this song file ready to upload?`);
+    
+    if (!uploadConfirmation) return;
+    
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'audio/*';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.startsWith('audio/')) {
+            alert('❌ Please select an audio file (MP3, WAV, etc.)');
+            return;
         }
-    })
- })
-  
-  
-}*/
+        
+        if (file.size > 10 * 1024 * 1024) {
+            alert('❌ File too large! Please select a file smaller than 10MB');
+            return;
+        }
+        
+        uploadSongFile(file, songId, songName, artistName);
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+}
+
+// Upload song file and notify similar song requesters
+function uploadSongFile(file, songId, songName, artistName) {
+    alert('⏳ Uploading song file...');
+    
+    setTimeout(() => {
+        const mockAudioUrl = URL.createObjectURL(file);
+        const songRef = ref(db, 'Find Song Lists/' + songId);
+        
+        update(songRef, {
+            audioUrl: mockAudioUrl,
+            uploadedBy: auth.currentUser.uid.slice(18),
+            uploadedAt: new Date().toISOString(),
+            fileName: file.name,
+            fileSize: file.size,
+            searchSatus: false
+        }).then(() => {
+            alert(`✅ Song uploaded successfully!\n\n"${songName}" by ${artistName}\n\nYou've helped fulfill this song request!`);
+            displaySongsUsersAreLookingFor();
+            
+            // Notify ALL users looking for similar songs
+            notifyAllSimilarSongRequesters(songName, artistName, mockAudioUrl);
+            
+        }).catch((error) => {
+            console.error('Error updating song record:', error);
+            alert('❌ Failed to upload song. Please try again.');
+        });
+    }, 2000);
+}
+
+// [Rest of the functions remain the same - notifyAllSimilarSongRequesters, checkSimilarSongs, calculateSimilarity, levenshteinDistance, sendSimilarSongNotification, handleSongDownload, handleMarkCompleted, handleCancelSearch, deleteSongFromList]
+
+// Initialize when user is logged in
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        setTimeout(() => {
+            initializeMhintService();
+        }, 1000);
+    }
+});
+
+// Add CSS for better styling
+const mhintStyles = `
+    .song-request-item, .found-song-item {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .song-request-item:hover, .found-song-item:hover {
+        transform: translateX(5px);
+        background: rgba(255,255,255,0.15) !important;
+    }
+    
+    .found-song-item {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+    
+    .mhintInput {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 2px solid white;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        font-size: 16px;
+    }
+    
+    .mhintInput::placeholder {
+        color: #ccc;
+    }
+    
+    .mhintInput:focus {
+        outline: none;
+        border-color: var(--color2);
+        background: rgba(255,255,255,0.15);
+    }
+    
+    .mhintBtn {
+        background: white;
+        color: #333;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .mhintBtn:hover {
+        background: var(--color2);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .upload-song-btn, .mark-completed-btn, .cancel-search-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .upload-song-btn:hover, .mark-completed-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .cancel-search-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .download-song-link {
+        transition: all 0.3s ease;
+    }
+    
+    .download-song-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        background: #45a049 !important;
+    }
+    
+    audio {
+        border-radius: 25px;
+        background: rgba(0,0,0,0.3);
+    }
+    
+    audio::-webkit-media-controls-panel {
+        background: rgba(0,0,0,0.3);
+    }
+    
+    #uploadImageBtn:hover {
+        background: var(--color2);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    #removeImageBtn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+`;
+
+// Inject styles
+const styleSheet = document.createElement("style");
+styleSheet.textContent = mhintStyles;
+document.head.appendChild(styleSheet);

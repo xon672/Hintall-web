@@ -207,6 +207,17 @@ main {
   top: 2%;
 
 }
+.mhintBtn{
+  width :80%;
+  height :45px;
+  background: var(--color2 );
+  border :none;
+  margin-top :30px;
+  border-radius :5px;
+  font-size :15px ;
+  font-weight :bold;
+  
+}
 
 /*div tags*/
 #displayBd {
@@ -275,6 +286,7 @@ main {
   scroll-behavior: smooth;
   padding: 10px;
   position: relative;
+  color:var(--color2);
 }
 
 .moodButton {
@@ -404,8 +416,11 @@ main {
   border-radius: 15px;
   border-right: solid 2px var(--color2);
   border-bottom: solid 1.5px var(--color2);
-  text-align: center;
-  padding-top: 90px;
+  display: flex;
+  flex-direction :column;
+  align-items: center ;
+  
+  padding-top: 50px;
   color: var(--color2);
   font-size: 20px;
   overflow-wrap: break-word;
@@ -441,6 +456,14 @@ main {
   border: solid 2px;
   z-index: 999;
   bottom: 0;
+}
+.serviceBtnContainner {
+  width: 100%;
+  height:fit-content;
+}
+.mhintService{
+  height: 100%;
+  overflow: scroll ;
 }
 
 
@@ -558,7 +581,16 @@ main {
   font-size: 15px;
   color: var (--color1);
 }
-
+.mhintInput{
+  width :90%;
+  height:45px;
+  background: none ;
+  border :solid 1px var(--color2);
+  border-radius :5px;
+  margin-top: 20px;
+  padding-left: 10px;
+  color: var(--color2);
+}
 /* paragraph tags */
 #SignPage>p {
   width: 90vw;
