@@ -689,8 +689,9 @@ function openWidthdrawalPage() {
 }
 
 function sendUserDetailsForTransaction() {
-  // Your pre-filled message
-  var ngnAmount = document.getElementById('amountOfNgnToWidthraw').value
+    alert('Widthdrawal to local bank feature still under development')
+  // Your pre-filled message code for future withdrawal to local bank
+  /*var ngnAmount = document.getElementById('amountOfNgnToWidthraw').value
   var accounName = document.getElementById('bankAccountName').value
   var accountNumber = document.getElementById('bankAccountNumber').value
   var bankName = document.getElementById('bankName').value
@@ -741,7 +742,7 @@ function sendUserDetailsForTransaction() {
 
       }
     })
-  }
+  }*/
 }
 
 function addPendingWidthdrawal(user, ngnAmount, accounName, accountNumber, bankName) {

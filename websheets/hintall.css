@@ -41,7 +41,6 @@ main {
   position: absolute;
   right: 0;
   top: 0;
-
   z-index: 998;
   overflow: scroll;
   scroll-behavior: smooth;
@@ -51,7 +50,6 @@ main {
 [alt |="HintAll Logo"] {
   width: fit-content;
   height: 70px;
-
 }
 
 .GintIcon {
@@ -70,8 +68,6 @@ main {
 .hintAllName {
   display: block;
   opacity: 0;
-
-
 }
 
 .signUpfromLogin {
@@ -152,7 +148,6 @@ main {
   width: 45px;
   height: 45px;
   background: transparent;
-
   border-color: var(--color2);
   border-style: solid 2px;
   font-size: 30px;
@@ -180,7 +175,6 @@ main {
   display: block;
   width: 100%;
   height: 45px;
-
   background: transparent;
   margin-top: 30px;
   margin-bottom: 40px;
@@ -192,7 +186,6 @@ main {
   text-align: center;
   align-content: center;
   text-decoration: none;
-
 }
 
 .closeFinancePageBtn {
@@ -205,7 +198,6 @@ main {
   position: absolute;
   right: 5%;
   top: 2%;
-
 }
 .mhintBtn{
   width :80%;
@@ -216,7 +208,6 @@ main {
   border-radius :5px;
   font-size :15px ;
   font-weight :bold;
-  
 }
 
 /*div tags*/
@@ -268,12 +259,10 @@ main {
   display: flex;
   margin-top: 55px;
   margin-left: 20px;
-
 }
 
 .logoNameHolder {
   width: fit-content;
-
 }
 
 .contentHolder {
@@ -308,7 +297,6 @@ main {
   font-size: 70px;
   z-index: 500;
   text-align: center;
-
 }
 
 #loginPage {
@@ -341,8 +329,6 @@ main {
 
 .accountValueation {
   width: 100%;
-  height: fit-content;
-
 }
 
 .accountButtons {
@@ -373,7 +359,6 @@ main {
   display: flex;
   flex-direction: column;
   margin-top: 30px;
-
   align-items: center;
 }
 
@@ -392,19 +377,16 @@ main {
 .taskList {
   width: 100%;
   height: 75%;
-
   display: flex;
   flex-direction: column;
   gap: 20px;
   color: var(--color2);
   margin-top: 10px;
-
 }
 
 .offeredService {
   width: 100%;
   height: 70%;
-
   display: grid;
   grid-template-rows: 5fr 5fr;
   grid-template-columns: 4fr 4fr;
@@ -419,7 +401,6 @@ main {
   display: flex;
   flex-direction :column;
   align-items: center ;
-  
   padding-top: 50px;
   color: var(--color2);
   font-size: 20px;
@@ -430,7 +411,6 @@ main {
 .hintImgHolder {
   width: 100%;
   height: fit-content;
-
 }
 
 .ngnContainer {
@@ -491,7 +471,6 @@ main {
   font-weight: bold;
   margin-top: 15px;
   color: var(--color2);
-
 }
 
 .nairaNote {
@@ -539,7 +518,6 @@ main {
   text-transform: uppercase;
   margin-top: 30px;
   margin-bottom: 50px;
-
 }
 
 #SignPage>h1 {
@@ -547,13 +525,10 @@ main {
   text-align: center;
   text-transform: uppercase;
   margin-top: 30px;
-
-
 }
 
 .accountValueation>h1 {
   color: var(--color2);
-
   font-size: 25px;
 }
 
@@ -639,12 +614,10 @@ main {
   animation: fadeIn 4.5s;
   margin-top: 20px;
   margin-left: 5px;
-
 }
 
 .logoNameHolder {
   display: flex;
-
 }
 
 .fadeOutText {
@@ -715,7 +688,7 @@ main {
   color: var(--color2);
   margin: 5px 0;
 }
-
+  
 /* animation */
 @keyframes fadeIn {
   0% {
